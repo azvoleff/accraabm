@@ -47,20 +47,12 @@
 'model.reinitialize' : [False | validate_boolean] 
 'model.resultspath' : ["G:/Data/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
-# Whether to produce summary plots for the model run after the run is 
-# completed. Requires a working R installation, and some of the plots require 
-# the psn and NBH CSV files to be produced for every timestep (see these rc 
-# params below).
-'model.make_plots': [True | validate_boolean]
+# Whether to produce animation plots of LULC data and health data (otherwise, 
+# only). Requires a working R installation.
+'model.make_animations': [True | validate_boolean]
 # Whether to save psn data to CSV periodically while running the model. This 
 # will slow down the model considerably.
 'save_psn_data': [True | validate_boolean]
-# Whether to save NBH data to CSV periodically while running the model. This 
-# will slow down the model considerably.
-'save_NBH_data': [True | validate_boolean]
-# Whether to save shapefiles of LULC periodically while running the model. This 
-# will slow down the model A LOT.
-'save_LULC_shapefiles': [False | validate_boolean]
 
 ###############################################################################
 # Location of input data (these are restricted data)

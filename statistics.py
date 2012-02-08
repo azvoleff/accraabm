@@ -115,17 +115,3 @@ def draw_from_prob_dist(prob_dist):
     # between those two limits.
     return np.random.uniform(lowbinlim, upbinlim)
 
-def markov_transition(region):
-    # TODO: Right now this only works if there are only two classes. Rewrite 
-    # this to work for a wider range of scenarios.
-    current_lu = self._land_cover_array
-    new_lu = current_lu
-    random_values = np.random.random(np.shape(self._land_cover_array))
-    for t1 in trans_matrix.keys():
-        for t2 in trans_matrix[t1].keys():
-            lower_prob_bound, upper_prob_bound = trans_matrix[t1][t2]
-            new_lu[(current_lu == t1) & (random_values >= lower_prob_bound) & (random_values < upper_prob_bound)] <- t2
-    self._land_cover_array = new_lu
-    return self._land_cover_array
-
-    

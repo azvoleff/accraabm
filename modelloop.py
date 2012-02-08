@@ -84,11 +84,13 @@ def main_loop(world, results_path):
             # This could easily handle multiple regions, although currently 
             # there is only one, for all of Chitwan.
 
-            #TODO: Transition land, calculate health
-            pass
-            
             # Save event, LULC, and population data for later output to CSV.
             #region.increment_age()
+            pass
+
+        #TODO: Transition land, calculate health
+        current_lu = world.lulc_markov_transition()
+            
                 
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
@@ -110,7 +112,7 @@ def main_loop(world, results_path):
 
         model_time.increment()
 
-    return saved_data, time_strings
+    return time_strings
 
 def elapsed_time(start_time):
     elapsed = int(time.time() - start_time)

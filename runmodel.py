@@ -105,7 +105,7 @@ def main(argv=None):
 %s: started model run number %s.
 ************************************************************************************************
 """%(start_time_string, run_ID_number)
-    run_results, time_strings = main_loop(world, results_path) # This line actually runs the model.
+    time_strings = main_loop(world, results_path) # This line actually runs the model.
     end_time = time.localtime()
     end_time_string = time.strftime("%m/%d/%Y %I:%M:%S %p", end_time) 
     print """
@@ -116,70 +116,44 @@ def main(argv=None):
     
     # Save the results
     print "Saving result files..."
-    pop_data_file = os.path.join(results_path, "run_results.P")
-    output = open(pop_data_file, 'w')
-    pickle.dump(run_results, output)
-    output.close()
-
-    # Write neighborhood LULC, pop, x, y coordinates, etc. for the last 
-    # timestep.
-    world.write_NBHs_to_csv("END", results_path)
 
     # Write out the world file and mask used to run the model. Update the 
     # rcparams to point to these files so they will be reused if this run is 
     # rerun.
-    DEM_data_file = os.path.join(results_path, "AccraABM_DEM.tif")
-    array, prj, gt = world.get_DEM_data()
-    write_single_band_raster(array, prj, gt, DEM_data_file)
+    #DEM_data_file = os.path.join(results_path, "AccraABM_DEM.tif")
+    #array, gt, prj = world.get_DEM_data()
+    #write_single_band_raster(array, gt, prj, DEM_data_file)
     world_mask_data_file = os.path.join(results_path, "AccraABM_world_mask.tif")
-    array, prj, gt = world.get_world_mask_data()
-    write_single_band_raster(array, prj, gt, world_mask_data_file)
+    array, gt, prj = world.get_world_mask_data()
+    write_single_band_raster(array, gt, prj, world_mask_data_file)
 
+    lulc_data_file = os.path.join(results_path, "AccraABM_land_cover.tif")
+    array, gt, prj = world.get_lulc_data()
+    write_single_band_raster(array, gt, prj, lulc_data_file)
 
+    # TODO: write a function to handle writing out a markov_matrix from the 
+    # world/rcparams. Do this maybe after writing markov_matrix handling into 
+    # the rcvalidation code.
+    
     # Save the SHA-1 of the commit used to run the model, along with any diffs 
     # from the commit (the output of the git diff command). sys.path[0] gives 
     # the path of the currently running AccraABM code.
     git_diff_file = os.path.join(results_path, "git_diff.patch")
     commit_hash = save_git_diff(sys.path[0], git_diff_file)
 
-    run_results = reformat_run_results(run_results)
-    run_results_csv_file = os.path.join(results_path, "run_results.csv")
-    write_results_csv(run_results, run_results_csv_file, "neighid")
-
     time_csv_file = os.path.join(results_path, "time.csv")
     write_time_csv(time_strings, time_csv_file)
     
-    if rcParams['model.make_plots']:
-        print "Plotting population results..."
+    if rcParams['model.make_animations']:
+        print "Plotting results..."
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
-            subprocess.check_call([Rscript_binary, 'plot_pop.R', results_path],
+            subprocess.check_call([Rscript_binary, 'plot_results.R', results_path],
                     cwd=sys.path[0], stdout=dev_null, stderr=dev_null)
         except:
-            print "WARNING: Error running plot_pop.R."
+            print "WARNING: Error running plot_results.R."
         dev_null.close()
-
-        if rcParams['save_NBH_data']:
-            print "Plotting LULC results..."
-            # Make plots of the LULC and population results
-            dev_null = open(os.devnull, 'w')
-            try:
-                subprocess.check_call([Rscript_binary, 'plot_LULC.R', results_path],
-                        cwd=sys.path[0], stdout=dev_null, stderr=dev_null)
-            except:
-                print "WARNING: Error running plot_LULC.R"
-            dev_null.close()
-
-        if rcParams['save_psn_data']:
-            print "Plotting population results..."
-            dev_null = open(os.devnull, 'w')
-            try:
-                subprocess.check_call([Rscript_binary, 'plot_psns_data.R', results_path],
-                        cwd=sys.path[0], stdout=dev_null, stderr=dev_null)
-            except:
-                print "WARNING: Error running plot_psns_data.R."
-            dev_null.close()
 
     # Calculate the number of seconds per month the model took to run (to 
     # simplify choosing what machine to do model runs on). This is equal to the 
@@ -228,26 +202,6 @@ def save_git_diff(code_path, git_diff_file):
         print "WARNING: Error writing to git diff output file: %s"%(git_diff_file)
     return commit_hash
 
-def reformat_run_results(run_results):
-    """
-    For convenience and speed while running the model, the population results 
-    are stored in a dictionary keyed as [timestep][variable][neighborhoodid] = 
-    value. The write_results_csv function (written to export them in a 
-    conveient format for input into R) needs them to be keyed as 
-    [timestep][neighborhoodid][variable] = value. This function will reformat 
-    the run_results to make them compatible with the write_results_csv 
-    function.
-    """
-    run_results_fixed = {}
-    for timestep in run_results.keys():
-        run_results_fixed[timestep] = {}
-        for variable in run_results[timestep].keys():
-            for ID in run_results[timestep][variable]:
-                if not run_results_fixed[timestep].has_key(ID):
-                    run_results_fixed[timestep][ID] = {}
-                run_results_fixed[timestep][ID][variable] = run_results[timestep][variable][ID]
-    return run_results_fixed
-
 def write_time_csv(time_strings, time_csv_file):
     """
     Write a CSV file for conversion of timestep number, float, etc. to actual 
@@ -267,50 +221,6 @@ def write_time_csv(time_strings, time_csv_file):
             columns = np.vstack((columns, time_strings[col_header]))
     columns = np.transpose(columns)
     csv_writer.writerows(columns)
-    out_file.close()
-
-def write_results_csv(results, csv_file, ID_col_name):
-    "Write to CSV the saved model run data."
-    # The data is stored in a dictionary keyed by timestep, then keyed by ID, 
-    # then keyed by category. Write it to CSV where each row represents a 
-    # single agent (neighborhood, person, etc.), and each col a single variable 
-    # (from a single timestep).
-    timesteps = sorted(results.keys())
- 
-    # The IDs will uniquely identify each row of the final matrix.
-    IDs = []
-    for timestep in timesteps:
-        IDs.extend(results[timestep].keys())
-    IDs = sorted(np.unique(IDs))
-
-    # Now figure out the categories to use them as row_headers
-    categories = []
-    for timestep in timesteps:
-        for ID in results[timestep].keys():
-            categories.extend(results[timestep][ID].keys())
-    categories = sorted(np.unique(categories))
-
-    # The dataframe will end up (in R) having 1 column for agent ID, and 
-    # timesteps * categories additional columns for the data.
-    out_file = open(csv_file, "w")
-    csv_writer = csv.writer(out_file)
-    var_names = [ID_col_name]
-    for category in categories:
-        for timestep in timesteps:
-            var_name = category + "." + str(timestep)
-            var_names.append(var_name)
-    csv_writer.writerow(var_names)
-
-    for ID in IDs:
-        row = [ID]
-        for category in categories:
-            for timestep in timesteps:
-                if results[timestep].has_key(ID):
-                    if results[timestep][ID].has_key(category):
-                        row.append(results[timestep][ID][category])
-                    else:
-                        row.append(0)
-        csv_writer.writerow(row)
     out_file.close()
 
 if __name__ == "__main__":

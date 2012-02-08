@@ -127,13 +127,18 @@ def assemble_world():
 
     # Add the DEM, VIS, NDVI and Study Area masks to the model_world instance.
     #DEM_file = os.path.join(raw_data_path, rcParams['path.DEM_file'])
-    #model_world._DEM_array, model_world._DEM_gt, model_world._DEM_prj = read_single_band_raster(DEM_file)
+    #model_world.set_DEM_data(read_single_band_raster(DEM_file))
 
     land_cover_file = os.path.join(raw_data_path, rcParams['inputfile.land_cover'])
-    model_world._land_cover_array, model_world._land_cover_gt, model_world._land_cover_prj = read_single_band_raster(land_cover_file)
+    lulc, gt, prj = read_single_band_raster(land_cover_file)
+    model_world.set_lulc_data(lulc, gt, prj)
 
     world_mask_file = os.path.join(raw_data_path, rcParams['inputfile.world_mask'])
-    model_world._world_mask_array, model_world._world_mask_gt, model_world._world_mask_prj = read_single_band_raster(world_mask_file)
+    world_mask, gt, prj = read_single_band_raster(land_cover_file)
+    model_world.set_world_mask_data(world_mask, gt, prj)
+
+    markov_matrix_path = os.path.join(raw_data_path, rcParams['inputfile.markov_matrix'])
+    model_world.set_lulc_markov_matrix(markov_matrix_path)
 
     # TODO: Use the world mask to produce a square cutout of the data, 
     # eliminating as much of the NA area as possible.
@@ -142,10 +147,9 @@ def assemble_world():
     region = model_world.new_region()
     for person in persons:
         region.add_agent(person)
-    markov_matrix_path = os.path.join(raw_data_path, rcParams['inputfile.markov_matrix'])
-    region.set_transition_dict(markov_matrix_path)
 
-    print "\nPersons: %s"%(region.num_persons())
+    print "\nPersons: %s, Region shape: %s"%(region.num_persons(), np.shape(model_world.get_lulc()))
+
     return model_world
 
 def save_world(world, filename):
