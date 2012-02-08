@@ -27,6 +27,7 @@ Alex Zvoleff, azvoleff@mail.sdsu.edu
 
 import os
 import csv
+import re
 
 import numpy as np
 
@@ -142,6 +143,37 @@ class Region(Agent_set):
     def num_persons(self):
         "Returns the number of persons in the population."
         return len(self._members)
+
+    def set_transition_dict(self, markov_file):
+        """
+        Stores a markov transition matrix in dictionary form to be used for a 
+        simple model of land cover change.
+        
+        The transitions are stored in a dictionary keyed as:
+            class_t1:class[t_2]:probability
+
+        """
+        file = open(markov_file, 'r')
+        lines = file.readlines()
+        file.close()
+        # Delete the first line since it is a header
+        if not (lines.pop(0) == '"first","second","Freq"\n'):
+            raise ValueError("Error loading transition matrix (%s doesn't look like a markov transition file)"%markov_file)
+
+        markov_dict = {}
+        for line in lines:
+            line = line.strip('\n')
+            t1, t2, prob = line.split(',')
+            t1 = int(t1.strip('\'"'))
+            t2 = int(t2.strip('\'"'))
+            prob = float(prob.strip('\'"'))
+            if not markov_dict.has_key(t1):
+                markov_dict[t1] = {}
+            if markov_dict[t1].has_key(t2):
+                raise ValueError("Error in transition matrix in %s"%markov_file)
+            markov_dict[t1][t2] = prob
+
+        self._markov_dict = markov_dict
 
 class World():
     """The world class generates new agents, while tracking ID numbers to 

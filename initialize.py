@@ -122,7 +122,6 @@ def assemble_world():
 
     raw_data_path = rcParams['path.raw_input_data']
     population_data_path = os.path.join(raw_data_path, rcParams['inputfile.sample_population'])
-    markov_matrix_path = os.path.join(raw_data_path, rcParams['inputfile.markov_matrix'])
 
     persons = assemble_persons(population_data_path, model_world)
 
@@ -143,7 +142,8 @@ def assemble_world():
     region = model_world.new_region()
     for person in persons:
         region.add_agent(person)
-
+    markov_matrix_path = os.path.join(raw_data_path, rcParams['inputfile.markov_matrix'])
+    region.set_transition_dict(markov_matrix_path)
 
     print "\nPersons: %s"%(region.num_persons())
     return model_world
