@@ -53,13 +53,13 @@ WIDTH <- 9
 HEIGHT <- 5.67
 
 # First load the imagery
-imagery <- brick("R:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
+imagery <- brick("G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
 layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load("R:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
-load("R:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
+load("G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
+load("G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
 whsa2data050510 <- data.frame(id=whsa2data050510$woman_id, lon=whsa2data050510$longitude,
                               lat=whsa2data050510$latitude)
 whsa2 <- merge(whsa2_15_feb_2011, whsa2data050510)
@@ -72,7 +72,7 @@ save(whsa2, file=paste(DATA_PATH, "/whsa2.Rdata", sep=""))
 whsa2_spdf <- spTransform(whsa2_spdf, CRS(projection(imagery)))
 save(whsa2_spdf, file=paste(DATA_PATH, "/whsa2_spdf.Rdata", sep=""))
 
-potential_EAs <- readOGR("R:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
+potential_EAs <- readOGR("G:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
 # These are the EAs IDs for clusters 1, 3, and 9, in order
 EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
                     c(506001, 505048),
@@ -134,6 +134,29 @@ for (clustnum in 1:nrow(ABM_clusters)) {
         value_total <- sum(transition_matrix$Freq[value_rows])
         transition_matrix$Freq[value_rows] <- transition_matrix$Freq[value_rows] / value_total
     }
+    write.csv(crosstab(t1, t2), file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_transition_matrix_for_ppt.csv", sep=""))
+    # Need to sort the transition matrix so the upper and lower bounds can be 
+    # set for the random assignment (based on these probabilities) In the 
+    new_col <- rep(NA, nrow(transition_matrix))
+    # Round the frequencies now to avoid rounding errors later
+    transition_matrix$Freq <- round(transition_matrix$Freq, 5)
+    transition_matrix <- cbind(transition_matrix, lower=new_col, upper=new_col)
+    transition_matrix <- transition_matrix[order(transition_matrix$first, transition_matrix$Freq),]
+    for (value in unique(transition_matrix$first)) {
+        value_rows <- which(transition_matrix$first == value)
+        first_row <- value_rows[1]
+        transition_matrix[first_row,]$lower <- 0
+        transition_matrix[first_row,]$upper <- transition_matrix[first_row,]$Freq
+        for (n in 2:length(value_rows)) {
+            this_row <- value_rows[n]
+            prev_row <- value_rows[n - 1]
+            transition_matrix[this_row,]$lower <- transition_matrix[prev_row,]$upper
+            transition_matrix[this_row,]$upper <- transition_matrix[this_row,]$lower + transition_matrix[this_row,]$Freq
+        }
+        transition_matrix[value_rows[length(value_rows)],]$upper <- 1
+    }
+    # Now drop the unneeded "Freq" column.
+    transition_matrix <- transition_matrix[!names(transition_matrix)=="Freq"]
     write.csv(transition_matrix, file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_transition_matrix.csv", sep=""), row.names=FALSE)
 
     # Make plot of changes in composition (to use in powerpoints)

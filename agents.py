@@ -157,21 +157,22 @@ class Region(Agent_set):
         lines = file.readlines()
         file.close()
         # Delete the first line since it is a header
-        if not (lines.pop(0) == '"first","second","Freq"\n'):
+        if not (lines.pop(0) == '"first","second","lower","upper"\n'):
             raise ValueError("Error loading transition matrix (%s doesn't look like a markov transition file)"%markov_file)
 
         markov_dict = {}
         for line in lines:
             line = line.strip('\n')
-            t1, t2, prob = line.split(',')
+            t1, t2, lower, upper = line.split(',')
             t1 = int(t1.strip('\'"'))
             t2 = int(t2.strip('\'"'))
-            prob = float(prob.strip('\'"'))
+            lower = float(lower.strip('\'"'))
+            upper = float(upper.strip('\'"'))
             if not markov_dict.has_key(t1):
                 markov_dict[t1] = {}
             if markov_dict[t1].has_key(t2):
                 raise ValueError("Error in transition matrix in %s"%markov_file)
-            markov_dict[t1][t2] = prob
+            markov_dict[t1][t2] = (lower, upper)
 
         self._markov_dict = markov_dict
 
