@@ -1,0 +1,17 @@
+model.timebounds : ((1997, 1), (2020,1))
+save_psn_data : FALSE
+save_NBH_data : FALSE
+save_LULC_shapefiles : FALSE
+#path.input_data_file : U:/ChitwanABM_Initialization/init_data.pickle
+#path.raw_input_data : U:/ChitwanABM_Initialization
+#path.world_mask : U:/ChitwanABM_Initialization/CVFS_Study_Area_Raster_30m.tif
+#path.DEM_file : U:/ChitwanABM_Initialization/CVFS_Study_Area_DEM_Raster_30m.tif
+#model.resultspath : R:/Data/ChitwanABM_runs
+path.input_data_file : C:/Users/azvoleff/Code/Python/TEMP/Source/init_data.pickle
+path.raw_input_data : C:/Users/azvoleff/Code/Python/TEMP/Source
+path.world_mask : C:/Users/azvoleff/Code/Python/TEMP/Source/CVFS_Study_Area_Raster_30m.tif
+path.DEM_file : C:/Users/azvoleff/Code/Python/TEMP/Source/CVFS_Study_Area_DEM_Raster_30m.tif
+model.resultspath : C:/Users/azvoleff/Code/Python/TEMP/Output
+scenario.name : Yabiku
+model.parameterization.marriage : yabiku2006
+model.parameterization.firstbirthtiming : simple

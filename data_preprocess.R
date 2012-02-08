@@ -31,7 +31,7 @@ require(raster)
 require(maptools) # for union function
 require(ggplot2)
 
-#DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 
 # Define a function to replace NAs with resampling:
 replace_nas <- function(input_vector) {
@@ -52,7 +52,12 @@ DPI <- 300
 WIDTH <- 9
 HEIGHT <- 5.67
 
-# First load the human survey data
+# First load the imagery
+imagery <- brick("G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
+layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
+layerNames(imagery) <- layer_names
+
+# Now load the human survey data
 load("G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
 load("G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
 whsa2data050510 <- data.frame(id=whsa2data050510$woman_id, lon=whsa2data050510$longitude,
@@ -64,6 +69,7 @@ whsa2_spdf <- SpatialPointsDataFrame(coords=cbind(whsa2$lon, whsa2$lat),
                                                       +datum=WGS84 
                                                       +ellps=WGS84"))
 save(whsa2, file=paste(DATA_PATH, "/whsa2.Rdata", sep=""))
+whsa2_spdf <- spTransform(whsa2_spdf, CRS(projection(imagery)))
 save(whsa2_spdf, file=paste(DATA_PATH, "/whsa2_spdf.Rdata", sep=""))
 
 potential_EAs <- readOGR("G:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
@@ -71,20 +77,16 @@ potential_EAs <- readOGR("G:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve"
 EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
                     c(506001, 505048),
                     c(502023, 502012, 502009))
-data_columns <- grep("^(id|w203_own_health|ses|hweight08|ea|major_ethnic|w116_religion|education)$", names(whsa2))
+data_columns <- grep("^(id|w203_own_health|ses|hweight08|ea|major_ethnic|w116_religion|education|hhid)$", names(whsa2))
 whsa2 <- whsa2[, data_columns]
 ABM_clusters <- potential_EAs[potential_EAs$ABMCLSTNUM %in% c(1, 3, 9),]
 writeOGR(ABM_clusters, DATA_PATH, "ABM_clusters", "ESRI Shapefile", overwrite_layer=TRUE)
 
 # Cut out each cluster from the raster and calculate transition matrices
-imagery <- brick("G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
-layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
-layerNames(imagery) <- layer_names
-
 NDVI2001 <- c()
 for (clustnum in 1:nrow(ABM_clusters)) {
     # First write out the respondent data
-    write.csv(whsa2[whsa2$ea %in% EA_clusters[[clustnum]],], file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_sample_population.csv", sep=""))
+    write.csv(whsa2[whsa2$ea %in% EA_clusters[[clustnum]],], file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_sample_population.csv", sep=""), row.names=FALSE)
     
     clipped_imagery <- crop(imagery, ABM_clusters[clustnum,])
     #plot(clipped_imagery)
@@ -145,7 +147,7 @@ for (clustnum in 1:nrow(ABM_clusters)) {
     changes <- data.frame(year, percent, class=comp_classes)
     qplot(year, percent, geom="line", colour=class, data=changes)
     ggsave(paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_composition_plot.png", sep=""), dpi=DPI, width=WIDTH, height=HEIGHT)
-    write.csv(changes, file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_composition_data.csv", sep=""))
+    write.csv(changes, file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_composition_data.csv", sep=""), row.names=FALSE)
 
     png(file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_map.png", sep=""), width=6.5, height=6.5, units="in",  res=300)
     brks <- c(0, 1, 2, 3, 4)
