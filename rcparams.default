@@ -44,7 +44,7 @@
 # in the model output for later reuse.
 'model.RandomState' : [None | validate_RandomState] 
 # Reinitialize a new world from scratch, or use existing pickled world.
-'model.reinitialize' : [True | validate_boolean] 
+'model.reinitialize' : [False | validate_boolean] 
 'model.resultspath' : ["R:/Data/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
 # Whether to produce summary plots for the model run after the run is 

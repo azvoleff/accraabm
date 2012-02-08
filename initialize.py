@@ -171,7 +171,7 @@ def generate_world():
         print "Calling R to preprocess WHSA data..."
         raw_data_path = rcParams['path.raw_input_data']
         Rscript_binary = rcParams['path.Rscript_binary']
-        #check_call([Rscript_binary, "data_preprocess.R", raw_data_path])
+        check_call([Rscript_binary, "data_preprocess.R", raw_data_path])
     except CalledProcessError:
         print "ERROR: while running data_preprocess.R R script"
     print "Generating world from preprocessed WHSA data..."

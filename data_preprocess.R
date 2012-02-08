@@ -53,13 +53,13 @@ WIDTH <- 9
 HEIGHT <- 5.67
 
 # First load the imagery
-imagery <- brick("G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
+imagery <- brick("R:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
 layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load("G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
-load("G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
+load("R:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
+load("R:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
 whsa2data050510 <- data.frame(id=whsa2data050510$woman_id, lon=whsa2data050510$longitude,
                               lat=whsa2data050510$latitude)
 whsa2 <- merge(whsa2_15_feb_2011, whsa2data050510)
@@ -72,7 +72,7 @@ save(whsa2, file=paste(DATA_PATH, "/whsa2.Rdata", sep=""))
 whsa2_spdf <- spTransform(whsa2_spdf, CRS(projection(imagery)))
 save(whsa2_spdf, file=paste(DATA_PATH, "/whsa2_spdf.Rdata", sep=""))
 
-potential_EAs <- readOGR("G:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
+potential_EAs <- readOGR("R:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
 # These are the EAs IDs for clusters 1, 3, and 9, in order
 EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
                     c(506001, 505048),
@@ -121,7 +121,6 @@ for (clustnum in 1:nrow(ABM_clusters)) {
     #   1 = NONVEG
     #   2 = VEG
     classes <- c("NONVEG", "VEG")
-
     # For NDVI layers, calculate and write a matrix with the transition 
     # probabilities. NOTE: Need to convert to PER YEAR transition probabilities
     t1 <- subset(clipped_imagery, grep("NDVI_2001", layerNames(clipped_imagery)))
@@ -129,11 +128,13 @@ for (clustnum in 1:nrow(ABM_clusters)) {
     # Eliminate the unknown values (clouds), coded as 0
     t1[t1==0] <- NA
     t2[t2==0] <- NA
-    transition_matrix <- crosstab(t1, t2)
-    probability_matrix <- as.matrix(transition_matrix / rowSums(transition_matrix))
-    row.names(probability_matrix) <- classes
-    names(probability_matrix) <- classes
-    write.csv(probability_matrix, file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_transition_matrix.csv", sep=""))
+    transition_matrix <- crosstab(t1, t2, long=TRUE)
+    for (value in unique(transition_matrix$first)) {
+        value_rows <- transition_matrix$first==value
+        value_total <- sum(transition_matrix$Freq[value_rows])
+        transition_matrix$Freq[value_rows] <- transition_matrix$Freq[value_rows] / value_total
+    }
+    write.csv(transition_matrix, file=paste(DATA_PATH, "/cluster_", ABM_clusters$ABMCLSTNUM[clustnum], "_transition_matrix.csv", sep=""), row.names=FALSE)
 
     # Make plot of changes in composition (to use in powerpoints)
     t1 <- getValues(t1)
