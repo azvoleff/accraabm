@@ -35,7 +35,7 @@ from PyABM import IDGenerator, boolean_choice
 from PyABM.agents import Agent, Agent_set, Agent_Store
 
 from AccraABM import rcParams, random_state
-#from AccraABM.statistics import *
+from AccraABM.statistics import calculate_cover_fraction
 
 if rcParams['model.use_psyco'] == True:
     import psyco
@@ -313,6 +313,13 @@ class World():
             for person in region.iter_persons():
                 yield person
 
+    def num_persons(self):
+        "Convenience function used for getting total populationsize."
+        pop = 0
+        for region in self.iter_regions():
+            pop += region.num_persons()
+        return pop
+
     def write_persons_to_csv(self, timestep, results_path):
         """
         Writes a list of persons, with a header row, to CSV.
@@ -361,15 +368,23 @@ class World():
             img_x = int((x - min_x)/pixel_width)
             img_y = int((y - min_y)/pixel_height)
             return img_x, img_y
-        data = np.zeros((window_width, window_width, len(self.get_persons())), dtype='int8')
+        data = np.zeros((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
         n = 0
         person_IDs = []
+        x_out = 0
+        y_out = 0
         for person in self.iter_persons():
             person_IDs.append(person.get_ID())
             x = person.get_x()
             y = person.get_y()
-            assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
-            assert (y - buffer > min_y) & (y + buffer < max_y), "Neighborhood boundary must be within raster image"
+            if (x - buffer > min_x) & (x + buffer < max_x):
+                x_out += 1
+                continue
+            if (y - buffer > min_y) & (y + buffer < max_y):
+                y_out += 1
+                continue
+            #assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
+            #assert (y - buffer > min_y) & (y + buffer < max_y), "Neighborhood boundary must be within raster image"
             # Round off coordinates to the nearest center of a cell
             x = round((x - min_x) / pixel_width, 0)*pixel_width + min_x + pixel_width/2
             y = round((y - min_y) / pixel_width, 0)*pixel_width + min_y + pixel_width/2
@@ -380,14 +395,15 @@ class World():
             box = lulc_array[ul_x:lr_x, lr_y:ul_y]
             data[:,:,n] = box
             n += 1
-        return person_IDs, neighborhoods
+        print "x's outside bounds: %s, y's outside bounds: %s"%(x_out, y_out)
+        return person_IDs, data
 
-    def calculate_veg_fractions():
+    def calculate_veg_fractions(self):
         # Vegetation is coded as:
         #   0: NA
         #   1: NONVEG
         #   2: VEG
-        buffer = rcParams['egocentric_nbh_buffer']
+        buffer = rcParams['lulc.buffer']
         person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
 
         veg_value = rcParams['lulc.veg_value']

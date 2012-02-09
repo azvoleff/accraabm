@@ -57,10 +57,6 @@ def convert_probability_units(probability):
         raise UnitsError("unhandled probability_time_units")
     return probability
 
-#TODO: these probabilities should be derived from the region, not directly from rcParams
-death_probabilities_male = convert_probability_units(rcParams['probability.death.male'])
-death_probabilities_female = convert_probability_units(rcParams['probability.death.female'])
-
 def __probability_index__(t):
     """
     Matches units of time in model to those the probability is expressed in. For 
@@ -117,13 +113,15 @@ def draw_from_prob_dist(prob_dist):
 
 def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
     # Note that areas are expressed in pixels.
-    area = np.sum((egocentric_nbhs[:,:,:] != NA_value) & (!is.nan(egocentric_nbhs[:,:,:])), 2)
-    veg_area = np.sum(egocentric_nbhs[:,:,:] == veg_value, 2)
-    veg_fractions = (veg_area / area)
-    veg_fractions_dict = {}
-    for veg_fraction, person_ID in zip(veg_fraction, person_IDs):
-        veg_fractions_dict[person_ID] = veg_fraction
-    return veg_fractions_dict
+    # In below line, np.invert is use for bitwise not (to select values that 
+    # are NOT nan
+    area = np.sum((egocentric_nbhs[:,:,:] != NA_value) & np.invert(np.isnan(egocentric_nbhs[:,:,:])), 2)
+    cover_area = np.sum(egocentric_nbhs[:,:,:] == value, 2)
+    cover_fractions = (cover_area / area)
+    cover_fractions_dict = {}
+    for cover_fraction, person_ID in zip(cover_fractions, person_IDs):
+        cover_fractions_dict[person_ID] = cover_fraction
+    return cover_fractions_dict
 
 def predict_self_reported_health(person):
     """

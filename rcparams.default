@@ -80,6 +80,7 @@
 # probabilities are specified.
 'probability.time_units' : ['years' | validate_time_units] 
 # The buffer is specified as the radius in meters
+'lulc.buffer' : [0 | validate_int]
 'lulc.veg_value' : [2 | validate_int]
 'lulc.NA_value' : [0 | validate_int]
 

@@ -96,6 +96,8 @@ def assemble_persons(populationFile, model_world):
     for person_id in people.iterkeys():
         person = people[person_id]
         id = person['id']
+        x = float(person['x_utm30'])
+        y = float(person['y_utm30'])
         age = 1
         ses = person['ses']
         sex = 'female'
@@ -107,7 +109,8 @@ def assemble_persons(populationFile, model_world):
         ea = person['ea']
         initial_agent = True
         person = model_world.new_person(None, id, age,
-                sex, ethnicity, religion, education, ea, hweight08, ses)
+                sex, initial_agent, ethnicity, religion, education, ea, hweight08, ses, x, y, 
+                health)
         persons.append(person)
         
     return persons
@@ -175,7 +178,7 @@ def generate_world():
         print "Calling R to preprocess WHSA data..."
         raw_data_path = rcParams['path.raw_input_data']
         Rscript_binary = rcParams['path.Rscript_binary']
-        check_call([Rscript_binary, "data_preprocess.R", raw_data_path])
+        #check_call([Rscript_binary, "data_preprocess.R", raw_data_path])
     except CalledProcessError:
         print "ERROR: while running data_preprocess.R R script"
     print "Generating world from preprocessed WHSA data..."
