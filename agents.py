@@ -142,6 +142,10 @@ class Region(Agent_set):
         for person in self.iter_agents():
             yield person
 
+    def get_persons(self):
+        "Returns an iterator over all the persons in the region"
+        return self._members.values()
+
     def increment_age(self):
         """Adds one to the age of each agent. The units of age are dependent on 
         the units of the input rc parameters."""
@@ -322,40 +326,35 @@ class World():
     def extract_egocentric_neighborhoods(self):
         lulc_array, gt, prj = self.get_lulc_data()
         rows, cols = np.shape(lulc_array)
-        origin_x = gt[0]
-        origin_y = gt[3]
+        min_x = gt[0]
+        min_y = gt[3]
         pixel_width = gt[1]
         pixel_height = -gt[5]
+        max_x = min_x + cols * pixel_width
+        max_y = min_y + rows * pixel_height
         buffer = rcParams['egocentric_nbh_buffer']
         buffer_pixels_x = buffer / pixel_width
         buffer_pixels_y = buffer / pixel_height
-
         def convert_to_img_coords(x, y):
-            img_x = int((x - origin_x)/pixel_width)
-            img_y = int((y - origin_y)/pixel_height)
+            img_x = int((x - min_x)/pixel_width)
+            img_y = int((y - min_y)/pixel_height)
             return img_x, img_y
-
-        # Setup so we can check that none of the neighborhood boundaries
-        # fall outside of the raster area, so we can raise if they do.
-        lower_right_x = origin_x + cols * pixel_width
-        lower_right_y = origin_y + rows * pixel_height
-        min_x = origin_x
-        max_x = lower_right_x
-        max_y = origin_y
-        min_y = lower_right_y
-
-        data = np.zeros((window_width, window_width, len(hh_coords.x)), dtype='int8')
+        data = np.zeros((window_width, window_width, len(self.get_persons())), dtype='int8')
+        n = 0
         for person in self.iter_persons():
             x = person.get_x()
             y = person.get_y()
             assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
             assert (y - buffer > min_y) & (y + buffer < max_y), "Neighborhood boundary must be within raster image"
             # Round off coordinates to the nearest center of a cell
-            x = round((x - xmin(imagery)) / pixel_width, 0)*pixel_width + xmin(imagery) + pixel_width/2
-            y = round((y - ymin(imagery)) / pixel_width, 0)*pixel_width + ymin(imagery) + pixel_width/2
+            x = round((x - min_x) / pixel_width, 0)*pixel_width + min_x + pixel_width/2
+            y = round((y - min_y) / pixel_width, 0)*pixel_width + min_y + pixel_width/2
             center_x, center_y = convert_to_img_coords(x, y)
             # In the below lines ul means "upper left", lr means "lower right"
             ul_x, ul_y = center_x-buffer_pixels_x, center_y+buffer_pixels_y+1
             lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
-            box = image[ul_x:lr_x, lr_y:ul_y]
-            data[:,:,hh_num] = box
+            box = lulc_array[ul_x:lr_x, lr_y:ul_y]
+            data[:,:,n] = box
+            n +=1
+
+        return data
