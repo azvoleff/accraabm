@@ -45,7 +45,7 @@ class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, religion=None, education=None, 
-            EA=None, hweight08=None, ses=None, x=None, y=None):
+            EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
         Agent.__init__(self, world, PID, initial_agent)
 
         # birthdate is the timestep of the birth of the agent. It is used to 
@@ -93,6 +93,12 @@ class Person(Agent):
 
         self._x = x
         self._y = y
+
+        self._health = health
+
+        # This will be populated using the extract_egocentric_neighborhoods 
+        # function
+        self._veg_fraction = None
 
     def get_x(self):
         return self._x
@@ -147,11 +153,20 @@ class Region(Agent_set):
         return self._members.values()
 
     def increment_age(self):
-        """Adds one to the age of each agent. The units of age are dependent on 
-        the units of the input rc parameters."""
+        """
+        Adds one to the age of each agent. The units of age are dependent on 
+        the units of the input rc parameters.
+        """
         for person in self.iter_persons():
             timestep = rcParams['model.timestep']
             person._age += timestep
+
+    def calc_self_reported_health(self):
+        """
+        Adds one to the age of each agent. The units of age are dependent on 
+        the units of the input rc parameters."""
+        for person in self.iter_persons():
+            person._health = predict_self_reported_health(person)
 
     def num_persons(self):
         "Returns the number of persons in the population."
@@ -263,7 +278,7 @@ class World():
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, religion=None, education=None, 
-            EA=None, hweight08=None, ses=None, x=None, y=None):
+            EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
         "Returns a new person agent."
         if PID == None:
             PID = self._PIDGen.next()
@@ -271,7 +286,7 @@ class World():
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                religion, education, EA, hweight08, ses, x, y)
+                religion, education, EA, hweight08, ses, x, y, health)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -323,8 +338,16 @@ class World():
                 csv_writer.writerow(new_row)
         out_file.close()
 
-    def extract_egocentric_neighborhoods(self):
-        lulc_array, gt, prj = self.get_lulc_data()
+    def extract_egocentric_neighborhoods(self, lulc_data, buffer):
+        """
+        Extracts a buffer from the given dataset around each person in the 
+        world.
+
+        Note that the 'lulc_data' parameter should be a tuple as is returned from 
+        the get_**_data functions (get_lulc_data, get_DEM_data, etc.), and that 
+        the 'buffer' parameter should be specified in meters.
+        """
+        lulc_array, gt, prj = lulc_data
         rows, cols = np.shape(lulc_array)
         min_x = gt[0]
         min_y = gt[3]
@@ -332,7 +355,6 @@ class World():
         pixel_height = -gt[5]
         max_x = min_x + cols * pixel_width
         max_y = min_y + rows * pixel_height
-        buffer = rcParams['egocentric_nbh_buffer']
         buffer_pixels_x = int(np.round(buffer / pixel_width, 0))
         buffer_pixels_y = int(np.round(buffer / pixel_height, 0))
         def convert_to_img_coords(x, y):
@@ -359,3 +381,18 @@ class World():
             data[:,:,n] = box
             n += 1
         return person_IDs, neighborhoods
+
+    def calculate_veg_fractions():
+        # Vegetation is coded as:
+        #   0: NA
+        #   1: NONVEG
+        #   2: VEG
+        buffer = rcParams['egocentric_nbh_buffer']
+        person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
+
+        veg_value = rcParams['lulc.veg_value']
+        NA_value = rcParams['lulc.NA_value']
+        veg_fractions_dict = calculate_cover_fraction(person_IDs, neighborhoods, veg_value, NA_value)
+
+        for person in self.iter_persons():
+            person._veg_fraction = veg_fractions_dict[person.get_ID()]

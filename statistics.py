@@ -115,13 +115,7 @@ def draw_from_prob_dist(prob_dist):
     # between those two limits.
     return np.random.uniform(lowbinlim, upbinlim)
 
-def calculate_veg_fraction(person_IDs, egocentric_nbhs):
-    # Vegetation is coded as:
-    #   0: NA
-    #   1: NONVEG
-    #   2: VEG
-    veg_value = rcParams['lulc.veg_value']
-    NA_value = rcParams['lulc.NA_value']
+def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
     # Note that areas are expressed in pixels.
     area = np.sum((egocentric_nbhs[:,:,:] != NA_value) & (!is.nan(egocentric_nbhs[:,:,:])), 2)
     veg_area = np.sum(egocentric_nbhs[:,:,:] == veg_value, 2)
@@ -130,3 +124,21 @@ def calculate_veg_fraction(person_IDs, egocentric_nbhs):
     for veg_fraction, person_ID in zip(veg_fraction, person_IDs):
         veg_fractions_dict[person_ID] = veg_fraction
     return veg_fractions_dict
+
+def predict_self_reported_health(person):
+    """
+    Calculates the self_reported_health of an agent, using the results of an 
+    OLS regression.
+    """
+    neighborhood = person.get_parent_agent().get_parent_agent()
+    result = rcParams['marrtime.coef.intercept']
+
+    # Neighborhood characteristics
+    result += rcParams['srh.coef.intercept'] * person._religion
+    result += rcParams['srh.coef.hweight08'] * person._hweight08
+    result += rcParams['srh.coef.ethnicity'] * person._ethnicity
+    result += rcParams['srh.coef.religion'] * person._religion
+    result += rcParams['srh.coef.education'] * person._education
+    result += rcParams['srh.coef.veg_fraction'] * person._veg_fraction
+
+    return result

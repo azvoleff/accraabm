@@ -82,3 +82,10 @@
 # The buffer is specified as the radius in meters
 'lulc.veg_value' : [2 | validate_int]
 'lulc.NA_value' : [0 | validate_int]
+
+'srh.coef.intercept' : [3.4635 | validate_float]
+'srh.coef.hweight08' : [-.5110 | validate_float]
+'srh.coef.ethnicity' : [.0234 | validate_float]
+'srh.coef.religion' : [-.0028 | validate_float]
+'srh.coef.education' : [-.1223 | validate_float]
+'srh.coef.veg_fraction' : [-.4774 | validate_float]

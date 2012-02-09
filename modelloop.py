@@ -77,10 +77,10 @@ def main_loop(world, results_path):
     write_results_CSV(world, results_path, 0)
 
     while model_time.in_bounds():
+        world.calculate_veg_fractions()
         for region in world.iter_regions():
             # Save event, LULC, and population data for later output to CSV.
-            #region.increment_age()
-            pass
+            region.calc_self_reported_health()
 
         #TODO: Transition land, calculate health
         world.lulc_markov_transition()
