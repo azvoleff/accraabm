@@ -333,15 +333,17 @@ class World():
         max_x = min_x + cols * pixel_width
         max_y = min_y + rows * pixel_height
         buffer = rcParams['egocentric_nbh_buffer']
-        buffer_pixels_x = buffer / pixel_width
-        buffer_pixels_y = buffer / pixel_height
+        buffer_pixels_x = int(np.round(buffer / pixel_width, 0))
+        buffer_pixels_y = int(np.round(buffer / pixel_height, 0))
         def convert_to_img_coords(x, y):
             img_x = int((x - min_x)/pixel_width)
             img_y = int((y - min_y)/pixel_height)
             return img_x, img_y
         data = np.zeros((window_width, window_width, len(self.get_persons())), dtype='int8')
         n = 0
+        person_IDs = []
         for person in self.iter_persons():
+            person_IDs.append(person.get_ID())
             x = person.get_x()
             y = person.get_y()
             assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
@@ -355,6 +357,5 @@ class World():
             lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
             box = lulc_array[ul_x:lr_x, lr_y:ul_y]
             data[:,:,n] = box
-            n +=1
-
-        return data
+            n += 1
+        return person_IDs, neighborhoods
