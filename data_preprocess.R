@@ -53,13 +53,13 @@ WIDTH <- 9
 HEIGHT <- 5.67
 
 # First load the imagery
-imagery <- brick("R:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
+imagery <- brick("G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
 layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load("R:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
-load("R:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
+load("G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
+load("G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
 whsa2data050510 <- data.frame(id=whsa2data050510$woman_id, lon=whsa2data050510$longitude,
                               lat=whsa2data050510$latitude)
 whsa2 <- merge(whsa2_15_feb_2011, whsa2data050510)
@@ -77,7 +77,7 @@ coords <- data.frame(id=whsa2_spdf$id, x_utm30=coordinates(whsa2_spdf)[,1],
                      y_utm30=coordinates(whsa2_spdf)[,2])
 whsa2 <- merge(coords, whsa2)
 
-potential_EAs <- readOGR("R:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
+potential_EAs <- readOGR("G:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
 # These are the EAs IDs for clusters 1, 3, and 9, in order
 EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
                     c(506001, 505048),

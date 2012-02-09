@@ -114,3 +114,19 @@ def draw_from_prob_dist(prob_dist):
     # Now we know the bin lims, so draw a random number evenly distributed 
     # between those two limits.
     return np.random.uniform(lowbinlim, upbinlim)
+
+def calculate_veg_fraction(person_IDs, egocentric_nbhs):
+    # Vegetation is coded as:
+    #   0: NA
+    #   1: NONVEG
+    #   2: VEG
+    veg_value = rcParams['lulc.veg_value']
+    NA_value = rcParams['lulc.NA_value']
+    # Note that areas are expressed in pixels.
+    area = np.sum((egocentric_nbhs[:,:,:] != NA_value) & (!is.nan(egocentric_nbhs[:,:,:])), 2)
+    veg_area = np.sum(egocentric_nbhs[:,:,:] == veg_value, 2)
+    veg_fractions = (veg_area / area)
+    veg_fractions_dict = {}
+    for veg_fraction, person_ID in zip(veg_fraction, person_IDs):
+        veg_fractions_dict[person_ID] = veg_fraction
+    return veg_fractions_dict
