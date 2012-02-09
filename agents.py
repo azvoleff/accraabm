@@ -25,8 +25,6 @@ the Agent class, while EA and is a subclass of the Agent_set object.
 Alex Zvoleff, azvoleff@mail.sdsu.edu
 """
 
-import pdb
-
 import os
 import csv
 import re
@@ -47,7 +45,7 @@ class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, religion=None, education=None, 
-            EA=None, hweight08=None, ses=None):
+            EA=None, hweight08=None, ses=None, x=None, y=None):
         Agent.__init__(self, world, PID, initial_agent)
 
         # birthdate is the timestep of the birth of the agent. It is used to 
@@ -92,6 +90,15 @@ class Person(Agent):
         self._hweight08 = hweight08
         self._ses = ses
         self._health = None
+
+        self._x = x
+        self._y = y
+
+    def get_x(self):
+        return self._x
+
+    def get_y(self):
+        return self._y
 
     def get_sex(self):
         return self._sex
@@ -244,7 +251,6 @@ class World():
         random_values = np.random.random(np.shape(current_lu))
         for t1 in self._markov_dict.keys():
             for t2 in self._markov_dict[t1].keys():
-                pdb.set_trace()
                 lower_prob_bound, upper_prob_bound = self._markov_dict[t1][t2]
                 new_lu[(current_lu == t1) & (random_values >= lower_prob_bound) 
                         & (random_values < upper_prob_bound)] <- t2
@@ -253,7 +259,7 @@ class World():
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, religion=None, education=None, 
-            EA=None, hweight08=None, ses=None):
+            EA=None, hweight08=None, ses=None, x=None, y=None):
         "Returns a new person agent."
         if PID == None:
             PID = self._PIDGen.next()
@@ -261,7 +267,7 @@ class World():
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                religion, education, EA, hweight08, ses)
+                religion, education, EA, hweight08, ses, x, y)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -300,6 +306,8 @@ class World():
             for person in region.iter_persons():
                 new_row = []
                 new_row.append(person.get_ID())
+                new_row.append(person._x)
+                new_row.append(person._y)
                 new_row.append(person.get_parent_agent().get_ID())
                 new_row.append(person.get_sex())
                 new_row.append(person.get_age())
@@ -311,5 +319,43 @@ class World():
                 csv_writer.writerow(new_row)
         out_file.close()
 
-    def extract_egocentric_neighborhood(self):
-        pass
+    def extract_egocentric_neighborhoods(self):
+        lulc_array, gt, prj = self.get_lulc_data()
+        rows, cols = np.shape(lulc_array)
+        origin_x = gt[0]
+        origin_y = gt[3]
+        pixel_width = gt[1]
+        pixel_height = -gt[5]
+        buffer = rcParams['egocentric_nbh_buffer']
+        buffer_pixels_x = buffer / pixel_width
+        buffer_pixels_y = buffer / pixel_height
+
+        def convert_to_img_coords(x, y):
+            img_x = int((x - origin_x)/pixel_width)
+            img_y = int((y - origin_y)/pixel_height)
+            return img_x, img_y
+
+        # Setup so we can check that none of the neighborhood boundaries
+        # fall outside of the raster area, so we can raise if they do.
+        lower_right_x = origin_x + cols * pixel_width
+        lower_right_y = origin_y + rows * pixel_height
+        min_x = origin_x
+        max_x = lower_right_x
+        max_y = origin_y
+        min_y = lower_right_y
+
+        data = np.zeros((window_width, window_width, len(hh_coords.x)), dtype='int8')
+        for person in self.iter_persons():
+            x = person.get_x()
+            y = person.get_y()
+            assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
+            assert (y - buffer > min_y) & (y + buffer < max_y), "Neighborhood boundary must be within raster image"
+            # Round off coordinates to the nearest center of a cell
+            x = round((x - xmin(imagery)) / pixel_width, 0)*pixel_width + xmin(imagery) + pixel_width/2
+            y = round((y - ymin(imagery)) / pixel_width, 0)*pixel_width + ymin(imagery) + pixel_width/2
+            center_x, center_y = convert_to_img_coords(x, y)
+            # In the below lines ul means "upper left", lr means "lower right"
+            ul_x, ul_y = center_x-buffer_pixels_x, center_y+buffer_pixels_y+1
+            lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
+            box = image[ul_x:lr_x, lr_y:ul_y]
+            data[:,:,hh_num] = box

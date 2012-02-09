@@ -114,4 +114,3 @@ def draw_from_prob_dist(prob_dist):
     # Now we know the bin lims, so draw a random number evenly distributed 
     # between those two limits.
     return np.random.uniform(lowbinlim, upbinlim)
-
