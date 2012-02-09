@@ -25,6 +25,8 @@ the Agent class, while EA and is a subclass of the Agent_set object.
 Alex Zvoleff, azvoleff@mail.sdsu.edu
 """
 
+import pdb
+
 import os
 import csv
 import re
@@ -197,8 +199,8 @@ class World():
     def get_lulc(self):
         return self._lulc_array
 
-    def set_lulc(self, array):
-        self._lulc_array = array
+    def set_lulc(self, new_lulc):
+        self._lulc_array = new_lulc
 
     def get_lulc_data(self):
         return self._lulc_array, self._lulc_gt, self._lulc_prj
@@ -242,6 +244,7 @@ class World():
         random_values = np.random.random(np.shape(current_lu))
         for t1 in self._markov_dict.keys():
             for t2 in self._markov_dict[t1].keys():
+                pdb.set_trace()
                 lower_prob_bound, upper_prob_bound = self._markov_dict[t1][t2]
                 new_lu[(current_lu == t1) & (random_values >= lower_prob_bound) 
                         & (random_values < upper_prob_bound)] <- t2

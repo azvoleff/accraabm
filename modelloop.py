@@ -31,7 +31,7 @@ import copy
 
 import numpy as np
 
-from PyABM import file_io
+from PyABM.file_io import write_single_band_raster
 from PyABM.utility import TimeSteps
 from ChitwanABM import rcParams
 
@@ -77,25 +77,23 @@ def main_loop(world, results_path):
     write_results_CSV(world, results_path, 0)
 
     while model_time.in_bounds():
-        if model_time.get_cur_month() == 1:
-            pass
-
         for region in world.iter_regions():
-            # This could easily handle multiple regions, although currently 
-            # there is only one, for all of Chitwan.
-
             # Save event, LULC, and population data for later output to CSV.
             #region.increment_age()
             pass
 
         #TODO: Transition land, calculate health
-        current_lu = world.lulc_markov_transition()
-            
+        world.lulc_markov_transition()
+
+        # Write out LULC for this timestep
+        output_file = os.path.join(results_path, "lulc_time_%s.tif"%model_time.get_cur_int_timestep())
+        lulc, gt, prj = world.get_lulc_data()
+        write_single_band_raster(lulc, gt, prj, output_file)
                 
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
         num_persons = region.num_persons()
-        stats_string = "%s | P: %5s"%(model_time.get_cur_date_string().ljust(7), num_persons)
+        stats_string = "%s | P: %5s "%(model_time.get_cur_date_string().ljust(7), num_persons)
         print stats_string
 
         # Save timestep, year and month, and time_float values for use in 
