@@ -101,11 +101,11 @@ def assemble_persons(populationFile, model_world):
         age = 1
         ses = person['ses']
         sex = 'female'
-        hweight08 = person['hweight08']
-        health = person['w203_own_health']
-        education = person['education']
-        ethnicity = person['major_ethnic']
-        religion = person['w116_religion']
+        hweight08 = float(person['hweight08'])
+        health = int(person['w203_own_health'])
+        education = int(person['education'])
+        ethnicity = int(person['major_ethnic'])
+        religion = int(person['w116_religion'])
         ea = person['ea']
         initial_agent = True
         person = model_world.new_person(None, id, age,
