@@ -35,7 +35,7 @@ from PyABM import IDGenerator, boolean_choice
 from PyABM.agents import Agent, Agent_set, Agent_Store
 
 from AccraABM import rcParams, random_state
-from AccraABM.statistics import calculate_cover_fraction
+from AccraABM.statistics import calculate_cover_fraction, predict_self_reported_health
 
 if rcParams['model.use_psyco'] == True:
     import psyco
@@ -368,23 +368,25 @@ class World():
             img_x = int((x - min_x)/pixel_width)
             img_y = int((y - min_y)/pixel_height)
             return img_x, img_y
-        data = np.zeros((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
-        n = 0
+        data = np.empty((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
+        data[:] = np.nan
         person_IDs = []
         x_out = 0
         y_out = 0
+        n = -1
         for person in self.iter_persons():
+            n += 1
             person_IDs.append(person.get_ID())
             x = person.get_x()
             y = person.get_y()
-            if (x - buffer > min_x) & (x + buffer < max_x):
+            if ((x - buffer) < min_x) or ((x + buffer) > max_x):
                 x_out += 1
                 continue
-            if (y - buffer > min_y) & (y + buffer < max_y):
+            if ((y - buffer) < min_y) or ((y + buffer) > max_y):
                 y_out += 1
                 continue
-            #assert (x - buffer > min_x) & (x + buffer < max_x), "Neighborhood boundary must be within raster image"
-            #assert (y - buffer > min_y) & (y + buffer < max_y), "Neighborhood boundary must be within raster image"
+            #assert ((x - buffer) < min_x) or ((x + buffer) > max_x), "Neighborhood boundary must be within raster image"
+            #assert ((y - buffer) < min_y) or ((y + buffer) > max_y), "Neighborhood boundary must be within raster image"
             # Round off coordinates to the nearest center of a cell
             x = round((x - min_x) / pixel_width, 0)*pixel_width + min_x + pixel_width/2
             y = round((y - min_y) / pixel_width, 0)*pixel_width + min_y + pixel_width/2
@@ -393,8 +395,12 @@ class World():
             ul_x, ul_y = center_x-buffer_pixels_x, center_y+buffer_pixels_y+1
             lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
             box = lulc_array[ul_x:lr_x, lr_y:ul_y]
-            data[:,:,n] = box
-            n += 1
+            # TODO: The commented out line below should eventually replace the 
+            # one following it for storing the box in the data array. The 
+            # current line is used to ensure NANs get filled in areas where the 
+            # neighborhood boundary for a person is outside the image.
+            #data[:,:,n] = box
+            data[0:np.shape(box)[0], 0:np.shape(box)[1], n] = box
         print "x's outside bounds: %s, y's outside bounds: %s"%(x_out, y_out)
         return person_IDs, data
 
