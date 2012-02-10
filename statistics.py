@@ -129,14 +129,16 @@ def predict_self_reported_health(person):
     OLS regression.
     """
     neighborhood = person.get_parent_agent().get_parent_agent()
-    result = rcParams['marrtime.coef.intercept']
 
-    # Neighborhood characteristics
-    result += rcParams['srh.coef.intercept'] * person._religion
+    result = rcParams['srh.coef.intercept']
+
+    # Individual-level characteristics
     result += rcParams['srh.coef.hweight08'] * person._hweight08
     result += rcParams['srh.coef.ethnicity'] * person._ethnicity
     result += rcParams['srh.coef.religion'] * person._religion
     result += rcParams['srh.coef.education'] * person._education
+
+    # Neighborhood chararacteristics
     result += rcParams['srh.coef.veg_fraction'] * person._veg_fraction
 
     return result
