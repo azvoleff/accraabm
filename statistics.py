@@ -128,8 +128,6 @@ def predict_self_reported_health(person):
     Calculates the self_reported_health of an agent, using the results of an 
     OLS regression.
     """
-    neighborhood = person.get_parent_agent().get_parent_agent()
-
     result = rcParams['srh.coef.intercept']
 
     # Individual-level characteristics
