@@ -71,8 +71,11 @@ def main_loop(world, results_path):
         """
         if rcParams['save_psn_data']:
             world.write_persons_to_csv(timestep, results_path)
-        #TODO: Also print out land use
-
+        if rcParams['save_lulc_data']:
+            output_file = os.path.join(results_path, "lulc_time_%s.tif"%timestep)
+            lulc, gt, prj = world.get_lulc_data()
+            write_single_band_raster(lulc, gt, prj, output_file)
+         
     # Write the results for timestep 0
     write_results_CSV(world, results_path, 0)
 
@@ -85,11 +88,7 @@ def main_loop(world, results_path):
         #TODO: Transition land, calculate health
         world.lulc_markov_transition()
 
-        # Write out LULC for this timestep
-        output_file = os.path.join(results_path, "lulc_time_%s.tif"%model_time.get_cur_int_timestep())
-        lulc, gt, prj = world.get_lulc_data()
-        write_single_band_raster(lulc, gt, prj, output_file)
-                
+               
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
         num_persons = region.num_persons()
