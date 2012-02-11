@@ -89,12 +89,10 @@ class Person(Agent):
         self._EA = EA
         self._hweight08 = hweight08
         self._ses = ses
-        self._health = None
+        self._health = health
 
         self._x = x
         self._y = y
-
-        self._health = health
 
         # This will be populated using the extract_egocentric_neighborhoods 
         # function
@@ -327,7 +325,7 @@ class World():
         psn_csv_file = os.path.join(results_path, "psns_time_%s.csv"%timestep)
         out_file = open(psn_csv_file, "w")
         csv_writer = csv.writer(out_file)
-        csv_writer.writerow(["pid", "rid", "gender", "age", "religion", "education", "ses", "health", "ethnicity"])
+        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "religion", "education", "ses", "health", "ethnicity"])
         for region in self.iter_regions():
             for person in region.iter_persons():
                 new_row = []
