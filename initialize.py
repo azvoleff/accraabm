@@ -99,7 +99,7 @@ def assemble_persons(populationFile, model_world):
         x = float(person['x_utm30'])
         y = float(person['y_utm30'])
         age = 1
-        ses = person['ses']
+        ses = int(person['ses'])
         sex = 'female'
         hweight08 = float(person['hweight08'])
         health = int(person['w203_own_health'])
