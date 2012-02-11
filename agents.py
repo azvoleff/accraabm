@@ -325,7 +325,7 @@ class World():
         psn_csv_file = os.path.join(results_path, "psns_time_%s.csv"%timestep)
         out_file = open(psn_csv_file, "w")
         csv_writer = csv.writer(out_file)
-        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "religion", "education", "ses", "health", "ethnicity"])
+        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "religion", "education", "ses", "health", "ethnicity", "veg_fraction"])
         for region in self.iter_regions():
             for person in region.iter_persons():
                 new_row = []
@@ -340,6 +340,7 @@ class World():
                 new_row.append(person._ses)
                 new_row.append(person._health)
                 new_row.append(person._ethnicity)
+                new_row.append(person._veg_fraction)
                 csv_writer.writerow(new_row)
         out_file.close()
 
