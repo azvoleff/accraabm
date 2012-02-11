@@ -149,10 +149,16 @@ def main(argv=None):
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
-            subprocess.check_call([Rscript_binary, 'plot_results.R', results_path],
+            subprocess.check_call([Rscript_binary, 'plot_LULC.R', results_path],
                     cwd=sys.path[0], stdout=dev_null, stderr=dev_null)
         except:
-            print "WARNING: Error running plot_results.R."
+            print "WARNING: Error running plot_LULC.R."
+        dev_null.close()
+        try:
+            subprocess.check_call([Rscript_binary, 'plot_health.R', results_path],
+                    cwd=sys.path[0], stdout=dev_null, stderr=dev_null)
+        except:
+            print "WARNING: Error running plot_health.R."
         dev_null.close()
 
     # Calculate the number of seconds per month the model took to run (to 
