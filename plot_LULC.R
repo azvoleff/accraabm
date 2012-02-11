@@ -34,7 +34,6 @@ PLOT_WIDTH_PIXELS = round(PLOT_WIDTH * DPI)
 PLOT_HEIGHT_PIXELS = round(PLOT_HEIGHT * DPI)
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
-DATA_PATH <- "R:/Data/AccraABM/Runs/Default/20120210-175757_azvoleff-THINK"
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
     
