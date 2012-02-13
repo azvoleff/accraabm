@@ -270,9 +270,8 @@ class World():
             for t2 in self._markov_dict[t1].keys():
                 lower_prob_bound, upper_prob_bound = self._markov_dict[t1][t2]
                 new_lu[(current_lu == t1) & (random_values >= lower_prob_bound) 
-                        & (random_values < upper_prob_bound)] <- t2
+                        & (random_values < upper_prob_bound)] = t2
         self.set_lulc(new_lu)
-        return self.get_lulc()
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, religion=None, education=None, 
@@ -410,10 +409,8 @@ class World():
         #   2: VEG
         buffer = rcParams['lulc.buffer']
         person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
-
         veg_value = rcParams['lulc.veg_value']
         NA_value = rcParams['lulc.NA_value']
         veg_fractions_dict = calculate_cover_fraction(person_IDs, neighborhoods, veg_value, NA_value)
-
         for person in self.iter_persons():
             person._veg_fraction = veg_fractions_dict[person.get_ID()]
