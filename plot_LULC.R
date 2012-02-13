@@ -37,6 +37,8 @@ DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
     
+new_mar = par("mar")
+new_mar[1] <- new_mar[1] + .4
 plot_LULC <- function(DATA_PATH, timestep) {
     #world_mask <- raster(paste(DATA_PATH, "/AccraABM_world_mask.tif", sep=""))
     land_cover <- raster(paste(DATA_PATH, "/lulc_time_", timestep, ".tif", sep=""))
@@ -44,12 +46,17 @@ plot_LULC <- function(DATA_PATH, timestep) {
     total_area <- sum(!is.na(land_cover_matrix) & (land_cover_matrix != 0))
     veg_pct <- format(round((sum(land_cover_matrix==2) / total_area) * 100), width=2)
     nonveg_pct <- format(round((sum(land_cover_matrix==1) / total_area) * 100), width=2)
+    # Set margins (add a little to the default bottom margin)
+    par("mar"=new_mar)
     image(land_cover, col=c("white", "chocolate4", "chartreuse3"), 
           main=paste("Timestep:", format(timestep, width=2)), axes=FALSE, 
-          xlab="", ylab="", cex.main=1.8, cex.sub=1.8, sub=paste("Vegetation: ", veg_pct, "%, Non-vegetation: ", nonveg_pct, "%", sep=""))
+          xlab="", ylab="", cex.main=5, cex.sub=4,
+          sub=paste("Vegetation: ", veg_pct, "%, Non-vegetation: ", nonveg_pct, 
+                    "%", sep=""))
 }
 
-ani.options(ffmpeg=shQuote('C:/Program Files (x86)/ffmpeg-git-6833fe4-win32-static/bin/ffmpeg.exe'))
-animation_file <- shQuote(paste(DATA_PATH, "/lulc_video.wmv", sep=""))
-saveVideo({for (timestep in timesteps$timestep) plot_LULC(DATA_PATH, timestep)}, 
-    interval=0.35, video.name=animation_file, other.opts="-s 800x800 -b 600K")
+ani.options(convert=shQuote('C:/Program Files/ImageMagick-6.7.1-Q16/convert.exe'))
+ani.options(outdir=DATA_PATH, ani.width=1200, ani.height=1200)
+animation_file <- "lulc_animation.gif"
+saveGIF({for (timestep in timesteps$timestep) plot_LULC(DATA_PATH, timestep)}, 
+    interval=0.35, movie.name=animation_file)
