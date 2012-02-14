@@ -154,6 +154,7 @@ def main(argv=None):
         except:
             print "WARNING: Error running plot_LULC.R."
         dev_null.close()
+        dev_null = open(os.devnull, 'w')
         try:
             subprocess.check_call([Rscript_binary, 'plot_health.R', results_path],
                     cwd=sys.path[0], stdout=dev_null, stderr=dev_null)

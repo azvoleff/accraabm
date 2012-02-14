@@ -27,12 +27,6 @@
 require(animation)
 require(raster)
 
-PLOT_WIDTH = 8.33
-PLOT_HEIGHT = 5.53
-DPI = 300
-PLOT_WIDTH_PIXELS = round(PLOT_WIDTH * DPI)
-PLOT_HEIGHT_PIXELS = round(PLOT_HEIGHT * DPI)
-
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
