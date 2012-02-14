@@ -181,9 +181,10 @@ def generate_world():
         imagery_path = rcParams['inputfile.imagery']
         WHSAII_050510_path = rcParams['inputfile.WHSAII_050510']
         WHSAII_20110727_path = rcParams['inputfile.WHSAII_20110127']
+        ACCRA_EA_path = rcParams['inputpath.Accra_EAs']
         Rscript_binary = rcParams['path.Rscript_binary']
         check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
-            imagery_path, WHSAII_050510_path, WHSAII_20110727_path])
+            imagery_path, WHSAII_050510_path, WHSAII_20110727_path, ACCRA_EA_path])
     except CalledProcessError:
         print "ERROR: while running data_preprocess.R R script"
     print "Generating world from preprocessed WHSA data..."

@@ -35,6 +35,7 @@ DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
 WHSAII_050510_FILE <- commandArgs(trailingOnly=TRUE)[3]
 WHSAII_20110727_FILE <- commandArgs(trailingOnly=TRUE)[4]
+ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[5]
 
 # Define a function to replace NAs with resampling:
 replace_nas <- function(input_vector) {
@@ -79,7 +80,7 @@ coords <- data.frame(id=whsa2_spdf$id, x_utm30=coordinates(whsa2_spdf)[,1],
                      y_utm30=coordinates(whsa2_spdf)[,2])
 whsa2 <- merge(coords, whsa2)
 
-potential_EAs <- readOGR("R:/Data/GIS/Ghana/Accra_EAs", "accra_polygon_Dissolve")
+potential_EAs <- readOGR(ACCRA_EA_PATH, "accra_polygon_Dissolve")
 # These are the EAs IDs for clusters 1, 3, and 9, in order
 EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
                     c(506001, 505048),
