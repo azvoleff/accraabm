@@ -115,7 +115,7 @@ def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
     # Note that areas are expressed in pixels.
     # In below line, np.invert is use for bitwise not (to select values that 
     # are NOT nan
-    area = np.sum(np.sum((egocentric_nbhs[:,:,:] != NA_value) & np.invert(np.isnan(egocentric_nbhs[:,:,:])), 1), 0)
+    area = np.sum(np.sum(egocentric_nbhs[:,:,:] != NA_value, 1), 0)
     cover_area = np.sum(np.sum(egocentric_nbhs[:,:,:] == value, 1), 0)
     cover_fractions = (cover_area / area)
     cover_fractions_dict = {}
