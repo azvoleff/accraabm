@@ -32,6 +32,9 @@ require(maptools) # for union function
 require(ggplot2)
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
+WHSAII_050510_FILE <- commandArgs(trailingOnly=TRUE)[3]
+WHSAII_20110727_FILE <- commandArgs(trailingOnly=TRUE)[4]
 
 # Define a function to replace NAs with resampling:
 replace_nas <- function(input_vector) {
@@ -43,7 +46,7 @@ replace_nas <- function(input_vector) {
 # Buffer distance specifies the area to include in the buffered neighborhood 
 # (to expand the neighborhood to avoid boundary effects with neighborhoods are 
 # calculated)
-buffer_distance <- 200
+buffer_distance <- 500
 
 theme_update(theme_grey(base_size=18))
 update_geom_defaults("smooth", aes(size=1))
@@ -53,13 +56,13 @@ WIDTH <- 9
 HEIGHT <- 5.67
 
 # First load the imagery
-imagery <- brick("R:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif")
+imagery <- brick(IMAGERY_PATH)
 layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load("R:/Data/Ghana/20101206/whsa_ii_data050510.Rdata")
-load("R:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata")
+load(WHSAII_050510_FILE)
+load(WHSAII_20110727_FILE)
 whsa2data050510 <- data.frame(id=whsa2data050510$woman_id, lon=whsa2data050510$longitude,
                               lat=whsa2data050510$latitude)
 whsa2 <- merge(whsa2_15_feb_2011, whsa2data050510)

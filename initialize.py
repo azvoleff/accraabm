@@ -134,6 +134,7 @@ def assemble_world():
 
     land_cover_file = os.path.join(raw_data_path, rcParams['inputfile.land_cover'])
     lulc, gt, prj = read_single_band_raster(land_cover_file)
+    lulc[lulc < -1] = rcParams['lulc.NA_value'] # Assume anything coded <-1 is NaN
     model_world.set_lulc_data(lulc, gt, prj)
 
     world_mask_file = os.path.join(raw_data_path, rcParams['inputfile.world_mask'])
@@ -177,8 +178,12 @@ def generate_world():
     try:
         print "Calling R to preprocess WHSA data..."
         raw_data_path = rcParams['path.raw_input_data']
+        imagery_path = rcParams['inputfile.imagery']
+        WHSAII_050510_path = rcParams['inputfile.WHSAII_050510']
+        WHSAII_20110727_path = rcParams['inputfile.WHSAII_20110127']
         Rscript_binary = rcParams['path.Rscript_binary']
-        #check_call([Rscript_binary, "data_preprocess.R", raw_data_path])
+        check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
+            imagery_path, WHSAII_050510_path, WHSAII_20110727_path])
     except CalledProcessError:
         print "ERROR: while running data_preprocess.R R script"
     print "Generating world from preprocessed WHSA data..."

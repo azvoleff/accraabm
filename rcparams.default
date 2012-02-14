@@ -45,7 +45,7 @@
 'model.RandomState' : [None | validate_RandomState] 
 # Reinitialize a new world from scratch, or use existing pickled world.
 'model.reinitialize' : [False | validate_boolean] 
-'model.resultspath' : ["R:/Data/AccraABM/Runs" | validate_writable_dir]
+'model.resultspath' : ["G:/Data/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
 # Whether to produce animation plots of LULC data and health data (otherwise, 
 # only). Requires a working R installation.
@@ -60,11 +60,14 @@
 ###############################################################################
 # This is the path to the processed data file containing the final output file 
 # from the "initialize.py" script.
-'path.initialization_file' : ["R:/Data/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
+'path.initialization_file' : ["G:/Data/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
 # The following is the path to the original data that is used when running the 
 # "initialize.py" script. The data_preprocess.R script will output several new 
 # files here when it is run, so this directory must be writeable.
-'path.raw_input_data' : ["R:/Data/AccraABM/Initialization" | validate_writable_dir]
+'path.raw_input_data' : ["G:/Data/AccraABM/Initialization" | validate_writable_dir]
+'inputfile.imagery' : ["G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
+'inputfile.WHSAII_050510' : ["G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata" | novalidation]
+'inputfile.WHSAII_20110127' : ["G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata" | novalidation]
 # The world_mask is a binary GeoTIFF (zeros and ones), indicating the land area 
 # represented within the model. This file should be in the raw_input_data path 
 # mentioned above.
@@ -72,7 +75,6 @@
 'inputfile.land_cover' : ["cluster_9_NDVI_2001_buffered_200m.tif" | novalidation]
 'inputfile.sample_population' : ["cluster_9_sample_population.csv" | novalidation]
 'inputfile.markov_matrix' : ["cluster_9_transition_matrix.csv" | novalidation]
-#'inputfile.dem_file' : ["" | validate_readable_initalization_file]
 
 ###############################################################################
 # Person agent parameters
