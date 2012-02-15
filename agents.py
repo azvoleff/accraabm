@@ -355,11 +355,11 @@ class World():
         lulc_array, gt, prj = lulc_data
         rows, cols = np.shape(lulc_array)
         min_x = gt[0]
-        min_y = gt[3]
-        pixel_width = gt[1]
-        pixel_height = -gt[5]
+        max_y = gt[3]
+        pixel_width = np.abs(gt[1])
+        pixel_height = np.abs(gt[5]) # note pixel_height is negative
         max_x = min_x + cols * pixel_width
-        max_y = min_y + rows * pixel_height
+        min_y = max_y - rows * pixel_height
         buffer_pixels_x = int(np.round(buffer / pixel_width, 0))
         buffer_pixels_y = int(np.round(buffer / pixel_height, 0))
         def convert_to_img_coords(x, y):
@@ -377,14 +377,8 @@ class World():
             person_IDs.append(person.get_ID())
             x = person.get_x()
             y = person.get_y()
-            if ((x - buffer) < min_x) or ((x + buffer) > max_x):
-                x_out += 1
-                continue
-            if ((y - buffer) < min_y) or ((y + buffer) > max_y):
-                y_out += 1
-                continue
-            #assert ((x - buffer) < min_x) or ((x + buffer) > max_x), "Neighborhood boundary must be within raster image"
-            #assert ((y - buffer) < min_y) or ((y + buffer) > max_y), "Neighborhood boundary must be within raster image"
+            assert ((x - buffer) > min_x) & ((x + buffer) < max_x), "Neighborhood must be within raster image"
+            assert ((y - buffer) > min_y) & ((y + buffer) < max_y), "Neighborhood must be within raster image"
             # Round off coordinates to the nearest center of a cell
             x = round((x - min_x) / pixel_width, 0)*pixel_width + min_x + pixel_width/2
             y = round((y - min_y) / pixel_width, 0)*pixel_width + min_y + pixel_width/2
@@ -399,7 +393,6 @@ class World():
             # neighborhood boundary for a person is outside the image.
             #data[:,:,n] = box
             data[0:np.shape(box)[0], 0:np.shape(box)[1], n] = box
-        print "x's outside bounds: %s, y's outside bounds: %s"%(x_out, y_out)
         return person_IDs, data
 
     def calculate_veg_fractions(self):

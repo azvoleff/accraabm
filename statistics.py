@@ -115,9 +115,12 @@ def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
     # Note that areas are expressed in pixels.
     # In below line, np.invert is use for bitwise not (to select values that 
     # are NOT nan
-    area = np.sum(np.sum(egocentric_nbhs[:,:,:] != NA_value, 1), 0)
+    total_area = np.sum(np.sum(egocentric_nbhs[:,:,:] != NA_value, 1), 0)
+    # Convert total area to float or else it will be an integer/integer for the 
+    # later division
+    total_area = np.array(total_area, dtype="float")
     cover_area = np.sum(np.sum(egocentric_nbhs[:,:,:] == value, 1), 0)
-    cover_fractions = (cover_area / area)
+    cover_fractions = (cover_area / total_area)
     cover_fractions_dict = {}
     for cover_fraction, person_ID in zip(cover_fractions, person_IDs):
         cover_fractions_dict[person_ID] = cover_fraction
