@@ -66,16 +66,15 @@
 # files here when it is run, so this directory must be writeable.
 'path.raw_input_data' : ["G:/Data/AccraABM/Initialization" | validate_writable_dir]
 'inputfile.imagery' : ["G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
-'inputfile.WHSAII_050510' : ["G:/Data/Ghana/20101206/whsa_ii_data050510.Rdata" | novalidation]
-'inputfile.WHSAII_20110127' : ["G:/Data/Ghana/20110725_From_Justin/20110727_WHSA2_SF36.Rdata" | novalidation]
-'inputpath.Accra_EAs' : ["G:/Data/GIS/Ghana/Accra_EAs" | novalidation]
+'inputfile.WHSA1' : ["D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2.Rdata" | novalidation]
+'inputpath.Accra_EAs' : ["G:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]
 # The world_mask is a binary GeoTIFF (zeros and ones), indicating the land area 
 # represented within the model. This file should be in the raw_input_data path 
 # mentioned above.
-'inputfile.world_mask' : ["cluster_9_area_mask.tif" | novalidation]
-'inputfile.land_cover' : ["cluster_9_NDVI_2001_buffered_500m.tif" | novalidation]
-'inputfile.sample_population' : ["cluster_9_sample_population.csv" | novalidation]
-'inputfile.markov_matrix' : ["cluster_9_transition_matrix.csv" | novalidation]
+'inputfile.world_mask' : ["cluster_1_area_mask.tif" | novalidation]
+'inputfile.land_cover' : ["cluster_1_NDVI_2001_buffered_500m.tif" | novalidation]
+'inputfile.sample_population' : ["cluster_1_sample.csv" | novalidation]
+'inputfile.markov_matrix' : ["cluster_1_transition_matrix.csv" | novalidation]
 
 ###############################################################################
 # Person agent parameters
