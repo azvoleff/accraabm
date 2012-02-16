@@ -45,11 +45,12 @@
 'model.RandomState' : [None | validate_RandomState] 
 # Reinitialize a new world from scratch, or use existing pickled world.
 'model.reinitialize' : [False | validate_boolean] 
-'model.resultspath' : ["G:/Data/AccraABM/Runs" | validate_writable_dir]
+'model.resultspath' : ["G:/Data/Ghana/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
 # Whether to produce animation plots of LULC data and health data (otherwise, 
 # only). Requires a working R installation.
-'model.make_animations': [True | validate_boolean]
+'model.make_LULC_animations': [True | validate_boolean]
+'model.make_health_animations': [False | validate_boolean]
 # Whether to save psn data to CSV, and/or lulc data to geotiff periodically 
 # while running the model.  This will slow down the model considerably.
 'save_psn_data': [True | validate_boolean]
@@ -60,11 +61,11 @@
 ###############################################################################
 # This is the path to the processed data file containing the final output file 
 # from the "initialize.py" script.
-'path.initialization_file' : ["G:/Data/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
+'path.initialization_file' : ["G:/Data/Ghana/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
 # The following is the path to the original data that is used when running the 
 # "initialize.py" script. The data_preprocess.R script will output several new 
 # files here when it is run, so this directory must be writeable.
-'path.raw_input_data' : ["G:/Data/AccraABM/Initialization" | validate_writable_dir]
+'path.raw_input_data' : ["G:/Data/Ghana/AccraABM/Initialization" | validate_writable_dir]
 'inputfile.imagery' : ["G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
 'inputfile.WHSA1' : ["D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2.Rdata" | novalidation]
 'inputpath.Accra_EAs' : ["G:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]

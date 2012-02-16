@@ -144,8 +144,8 @@ def main(argv=None):
     time_csv_file = os.path.join(results_path, "time.csv")
     write_time_csv(time_strings, time_csv_file)
     
-    if rcParams['model.make_animations']:
-        print "Plotting results..."
+    if rcParams['model.make_LULC_animations']:
+        print "Plotting LULC results..."
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
@@ -154,6 +154,10 @@ def main(argv=None):
         except:
             print "WARNING: Error running plot_LULC.R."
         dev_null.close()
+
+    if rcParams['model.make_health_animations']:
+        print "Plotting LULC results..."
+        Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
             subprocess.check_call([Rscript_binary, 'plot_health.R', results_path],
