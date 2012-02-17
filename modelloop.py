@@ -1,18 +1,18 @@
 # Copyright 2011 Alex Zvoleff
 #
-# This file is part of the ChitwanABM agent-based model.
+# This file is part of the AccraABM agent-based model.
 # 
-# ChitwanABM is free software: you can redistribute it and/or modify it under the
+# AccraABM is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
 # Foundation, either version 3 of the License, or (at your option) any later
 # version.
 # 
-# ChitwanABM is distributed in the hope that it will be useful, but WITHOUT ANY
+# AccraABM is distributed in the hope that it will be useful, but WITHOUT ANY
 # WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License along with
-# ChitwanABM.  If not, see <http://www.gnu.org/licenses/>.
+# AccraABM.  If not, see <http://www.gnu.org/licenses/>.
 #
 # Contact Alex Zvoleff in the Department of Geography at San Diego State 
 # University with any comments or questions. See the README.txt file for 
@@ -33,7 +33,7 @@ import numpy as np
 
 from PyABM.file_io import write_single_band_raster
 from PyABM.utility import TimeSteps
-from ChitwanABM import rcParams
+from AccraABM import rcParams
 
 if rcParams['model.use_psyco'] == True:
     import psyco
