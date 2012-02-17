@@ -156,7 +156,7 @@ def main(argv=None):
         dev_null.close()
 
     if rcParams['model.make_health_animations']:
-        print "Plotting LULC results..."
+        print "Plotting health results..."
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
