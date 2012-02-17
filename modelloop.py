@@ -44,7 +44,6 @@ timestep = rcParams['model.timestep']
 
 model_time = TimeSteps(timebounds, timestep)
 
-#TODO: Setup saved_data so it can store the raster results
 saved_data=[]
 
 def main_loop(world, results_path):
@@ -81,15 +80,13 @@ def main_loop(world, results_path):
     write_results_CSV(world, results_path, 0)
 
     while model_time.in_bounds():
+        world.lulc_markov_transition()
+               
         world.calculate_veg_fractions()
         for region in world.iter_regions():
             # Save event, LULC, and population data for later output to CSV.
             region.calc_self_reported_health()
 
-        #TODO: Transition land, calculate health
-        world.lulc_markov_transition()
-
-               
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
         num_persons = region.num_persons()
