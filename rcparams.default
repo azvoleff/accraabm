@@ -50,7 +50,7 @@
 # Whether to produce animation plots of LULC data and health data (otherwise, 
 # only). Requires a working R installation.
 'model.make_LULC_animations': [True | validate_boolean]
-'model.make_health_animations': [False | validate_boolean]
+'model.make_health_animations': [True| validate_boolean]
 # Whether to save psn data to CSV, and/or lulc data to geotiff periodically 
 # while running the model.  This will slow down the model considerably.
 'save_psn_data': [True | validate_boolean]
