@@ -36,13 +36,13 @@ timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
     
 new_mar = par("mar")
 new_mar[1] <- new_mar[1] + .4
-plot_health<- function(DATA_PATH, timestep) {
+plot_kriged_health <- function(data_path, timestep) {
     # Load the grid on which to Krige. This GeoTIFF also will be used to mask 
     # the final kriging results.
-    world_mask <- readGDAL(paste(DATA_PATH, "AccraABM_world_mask.tif", sep="/"))
+    world_mask <- readGDAL(paste(data_path, "AccraABM_world_mask.tif", sep="/"))
     world_mask$band1[world_mask$band1==min(world_mask$band1)] <- 0
     world_mask$band1[world_mask$band1==max(world_mask$band1)] <- 1
-    persons <- read.csv(paste(DATA_PATH, "/psns_time_", timestep, ".csv", sep=""))
+    persons <- read.csv(paste(data_path, "/psns_time_", timestep, ".csv", sep=""))
     persons <- SpatialPointsDataFrame(cbind(persons$x_utm30, persons$y_utm30), persons,
             coords.nrs=c(3,4), proj4string=CRS(proj4string(world_mask)))
     mean_health <- format(round(mean(persons$health), 2), width=4)
@@ -58,9 +58,9 @@ plot_health<- function(DATA_PATH, timestep) {
           axes=FALSE, xlab="", ylab="", cex.main=5, cex.sub=4,
           sub=paste("Mean self-reported health:", mean_health))
 }
- 
+
 ani.options(convert=shQuote('C:/Program Files/ImageMagick-6.7.1-Q16/convert.exe'))
 ani.options(outdir=DATA_PATH, ani.width=1200, ani.height=1200)
 animation_file <- "health_animation.gif"
-saveGIF({for (timestep in timesteps$timestep) plot_health(DATA_PATH, timestep)}, 
+saveGIF({for (timestep in timesteps$timestep) plot_kriged_health(DATA_PATH, timestep)}, 
     interval=0.35, movie.name=animation_file)
