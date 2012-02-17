@@ -25,7 +25,7 @@ to run markov model (to calculate land use).
 
 import numpy as np
 
-ifrom AccraABM import rcParams
+from AccraABM import rcParams
 
 if rcParams['model.use_psyco'] == True:
     import psyco
