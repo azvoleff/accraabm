@@ -30,17 +30,12 @@ require(rgeos) # needed for gBuffer function
 require(raster)
 require(ggplot2)
 
-#DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
-DATA_PATH <- "G:/Data/AccraABM/Initialization/"
-#IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
-IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-#WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
-WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
+DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
+WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
 WHSA2_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-#ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
-ACCRA_EA_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
-#buffer_distance <- commandArgs(trailingOnly=TRUE)[5]
-buffer_distance <- 500
+ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
+buffer_distance <- commandArgs(trailingOnly=TRUE)[5]
 
 ###############################################################################
 # Load the data
