@@ -77,6 +77,7 @@ def main_loop(world, results_path):
             write_single_band_raster(lulc, gt, prj, output_file)
          
     # Write the results for timestep 0
+    world.calculate_veg_fractions()
     write_results_CSV(world, results_path, 0)
 
     while model_time.in_bounds():
