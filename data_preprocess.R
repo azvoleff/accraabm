@@ -29,13 +29,25 @@ require(rgdal)
 require(rgeos) # needed for gBuffer function
 require(raster)
 require(ggplot2)
+require(expm)
 
-DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
-IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
-WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
+#DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
+#IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
+IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+#WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
 WHSA2_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
-buffer_distance <- commandArgs(trailingOnly=TRUE)[5]
+#ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
+ACCRA_EA_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
+#buffer_distance <- commandArgs(trailingOnly=TRUE)[5]
+buffer_distance <- 100
+#WINDOWED_MARKOV <- commandArgs(trailingOnly=TRUE)[6]
+WINDOWED_MARKOV <- TRUE
+#WINDOWED_MARKOV <- commandArgs(trailingOnly=TRUE)[6]
+MARKOV_WINDOW_SIZE <- 5
+# The number of years included in the calibration dataset, so that the 
+# transition matrix can be adjusted to a period of one year.
+MARKOV_CALIBRATION_INTERVAL <- 8 
 
 ###############################################################################
 # Load the data
@@ -89,7 +101,7 @@ whsa2$w203_own_health <- replace_nas(whsa2$w203_own_health)
 # Now output the clusters
 ###############################################################################
 
-# Cut out each cluster from the raster and calculate transition matrices
+# Cut out each cluster from the raster and calculate Markov transition matrices
 for (clustnum in 1:length(EA_clusters)) {
     # First write out the respondent data
     EA <- EAs[EAs$EA %in% EA_clusters[[clustnum]],]
@@ -139,43 +151,77 @@ for (clustnum in 1:length(EA_clusters)) {
     #   1 = NONVEG
     #   2 = VEG
     classes <- c("NONVEG", "VEG")
-    # For NDVI layers, calculate and write a matrix with the transition 
-    # probabilities. NOTE: Need to convert to PER YEAR transition probabilities
+    # For NDVI layers, calculate and write a matrix with the Markov transition 
+    # probabilities.
     t1 <- subset(clipped_imagery, grep("NDVI_2001", layerNames(clipped_imagery)))
     t2 <- subset(clipped_imagery, grep("NDVI_2010", layerNames(clipped_imagery)))
     # Eliminate the unknown values (clouds), coded as 0
     t1[t1==0] <- NA
     t2[t2==0] <- NA
-    transition_matrix <- crosstab(t1, t2, long=TRUE)
-    for (value in unique(transition_matrix$first)) {
-        value_rows <- transition_matrix$first==value
-        value_total <- sum(transition_matrix$Freq[value_rows])
-        transition_matrix$Freq[value_rows] <- transition_matrix$Freq[value_rows] / value_total
+    if (WINDOWED_MARKOV) {
+        # TODO: this currently only works if there are only two classes.
+        t1_veg_prob <- focal(t1, w=MARKOV_WINDOW_SIZE, function(x) sum(x==2) / 
+                             sum(!is.na(x)))
+        t2_veg_prob <- focal(t2, w=MARKOV_WINDOW_SIZE, function(x) sum(x==2) / 
+                             sum(!is.na(x)))
+        prob_nonveg2veg <- (1 - t1_veg_prob) * t2_veg_prob
+        prob_nonveg2veg <- mean(as.matrix(prob_nonveg2veg), na.rm=TRUE)
+        prob_veg2nonveg <- t1_veg_prob * (1 - t2_veg_prob)
+        prob_veg2nonveg <- mean(as.matrix(prob_veg2nonveg), na.rm=TRUE)
+        # Setup the transition matrix:
+        trans_matrix_cal <- matrix(c(1 - prob_nonveg2veg, prob_nonveg2veg,
+                                      prob_veg2nonveg, 1 - prob_veg2nonveg),
+                                    byrow=TRUE, nrow=2, ncol=2)
+    } else {
+        trans_matrix_cal <- crosstab(t1, t2)
+        trans_matrix_cal <- trans_matrix_cal / rowSums(trans_matrix_cal)
     }
-    write.csv(crosstab(t1, t2), file=paste(DATA_PATH, "/cluster_", clustnum, "_transition_matrix_for_ppt.csv", sep=""))
+    # Now convert to per-year transition probabilities:
+    trans_matrix <- expm((1/MARKOV_CALIBRATION_INTERVAL) * logm(trans_matrix_cal))
+    # Note NONVEG is coded as 1 and VEG is coded as 2
+    rownames(trans_matrix) <- colnames(trans_matrix) <- c("NONVEG", "VEG")
+    write.csv(trans_matrix, file=paste(DATA_PATH, "/cluster_", clustnum, 
+                                            "_trans_matrix_for_ppt.csv", 
+                                            sep=""))
+    trans_matrix_long <- data.frame(first=rep(colnames(trans_matrix), 2))
+    trans_matrix_long$second <- rep(colnames(trans_matrix), each=2)
+    trans_matrix_long$Freq <- rep(NA, nrow(trans_matrix_long))
+    for (n in 1:nrow(trans_matrix_long)) {
+        class1 <- trans_matrix_long$first[n]
+        class2 <- trans_matrix_long$second[n]
+        trans_matrix_long$Freq[n] <- trans_matrix[class1, class2]
+    }
+
+    for (value in unique(trans_matrix_long$first)) {
+        value_rows <- trans_matrix_long$first==value
+        value_total <- sum(trans_matrix_long$Freq[value_rows])
+        trans_matrix_long$Freq[value_rows] <- 
+            trans_matrix_long$Freq[value_rows] / value_total
+    }
+
     # Need to sort the transition matrix so the upper and lower bounds can be 
     # set for the random assignment (based on these probabilities) In the 
-    new_col <- rep(NA, nrow(transition_matrix))
+    new_col <- rep(NA, nrow(trans_matrix_long))
     # Round the frequencies now to avoid rounding errors later
-    transition_matrix$Freq <- round(transition_matrix$Freq, 5)
-    transition_matrix <- cbind(transition_matrix, lower=new_col, upper=new_col)
-    transition_matrix <- transition_matrix[order(transition_matrix$first, transition_matrix$Freq),]
-    for (value in unique(transition_matrix$first)) {
-        value_rows <- which(transition_matrix$first == value)
+    trans_matrix_long$Freq <- round(trans_matrix_long$Freq, 5)
+    trans_matrix_long <- cbind(trans_matrix_long, lower=new_col, upper=new_col)
+    trans_matrix_long <- trans_matrix_long[order(trans_matrix_long$first, trans_matrix_long$Freq),]
+    for (value in unique(trans_matrix_long$first)) {
+        value_rows <- which(trans_matrix_long$first == value)
         first_row <- value_rows[1]
-        transition_matrix[first_row,]$lower <- 0
-        transition_matrix[first_row,]$upper <- transition_matrix[first_row,]$Freq
+        trans_matrix_long[first_row,]$lower <- 0
+        trans_matrix_long[first_row,]$upper <- trans_matrix_long[first_row,]$Freq
         for (n in 2:length(value_rows)) {
             this_row <- value_rows[n]
             prev_row <- value_rows[n - 1]
-            transition_matrix[this_row,]$lower <- transition_matrix[prev_row,]$upper
-            transition_matrix[this_row,]$upper <- transition_matrix[this_row,]$lower + transition_matrix[this_row,]$Freq
+            trans_matrix_long[this_row,]$lower <- trans_matrix_long[prev_row,]$upper
+            trans_matrix_long[this_row,]$upper <- trans_matrix_long[this_row,]$lower + trans_matrix_long[this_row,]$Freq
         }
-        transition_matrix[value_rows[length(value_rows)],]$upper <- 1
+        trans_matrix_long[value_rows[length(value_rows)],]$upper <- 1
     }
     # Now drop the unneeded "Freq" column.
-    transition_matrix <- transition_matrix[!names(transition_matrix)=="Freq"]
-    write.csv(transition_matrix, file=paste(DATA_PATH, "/cluster_", clustnum, "_transition_matrix.csv", sep=""), row.names=FALSE)
+    trans_matrix_long <- trans_matrix_long[!names(trans_matrix_long)=="Freq"]
+    write.csv(trans_matrix_long, file=paste(DATA_PATH, "/cluster_", clustnum, "_trans_matrix.csv", sep=""), row.names=FALSE)
 
     # Make plot of changes in composition (to use in powerpoints)
     t1 <- getValues(t1)

@@ -6,7 +6,7 @@
 # if no local AccraABMrc file is provided when the model is run, or that are 
 # used if any parameters are missing from it.
 # 
-# Parameters are specifed in the following format:
+# Parameters are specified in the following format:
 #
 # 	'parameter_name' : [default_value | validation_function] # Comment
 #
@@ -51,10 +51,18 @@
 # only). Requires a working R installation.
 'model.make_LULC_animations': [True | validate_boolean]
 'model.make_health_animations': [True| validate_boolean]
-# Whether to save psn data to CSV, and/or lulc data to geotiff periodically 
+# Whether to save psn data to CSV, and/or LULC data to GeoTIFF periodically 
 # while running the model.  This will slow down the model considerably.
 'save_psn_data': [True | validate_boolean]
 'save_lulc_data': [True | validate_boolean]
+# The Markov_window parameter indicates whether or not to run the calculations 
+# for Markov transition probabilities over a window (to account for 
+# misregistration and misclassification, for example). See Brown, Pijanowski, 
+# and Duh (2000) in Journal of Environmental Management.
+'model.Markov_window': [True | validate_boolean]
+# The Markov windows size is specified as the number of pixels per side for a 
+# square window.  This value is ignored if Markov_window is set to False.
+'model.Markov_window_size': [5 | validate_int]
 
 ###############################################################################
 # Location of input data (these are restricted data)
@@ -80,7 +88,7 @@
 ###############################################################################
 # Person agent parameters
 ###############################################################################
-# probability.time_units specifies the time period for which precalculated 
+# probability.time_units specifies the time period for which pre-calculated 
 # probabilities are specified.
 'probability.time_units' : ['years' | validate_time_units] 
 # The buffer is specified as the radius in meters
