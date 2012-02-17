@@ -150,7 +150,8 @@ for (clustnum in 1:length(EA_clusters)) {
     #   0 = NA
     #   1 = NONVEG
     #   2 = VEG
-    classes <- c("NONVEG", "VEG")
+    class_names <- c("NONVEG", "VEG")
+    class_codes <- c(1, 2)
     # For NDVI layers, calculate and write a matrix with the Markov transition 
     # probabilities.
     t1 <- subset(clipped_imagery, grep("NDVI_2001", layerNames(clipped_imagery)))
@@ -178,9 +179,11 @@ for (clustnum in 1:length(EA_clusters)) {
     }
     # Now convert to per-year transition probabilities:
     trans_matrix <- expm((1/MARKOV_CALIBRATION_INTERVAL) * logm(trans_matrix_cal))
-    # Note NONVEG is coded as 1 and VEG is coded as 2
-    rownames(trans_matrix) <- colnames(trans_matrix) <- c("NONVEG", "VEG")
-    write.csv(trans_matrix, file=paste(DATA_PATH, "/cluster_", clustnum, 
+    rownames(trans_matrix) <- colnames(trans_matrix) <- class_codes
+    # Also save a version of the matrix with textual class names, for ppt, etc.
+    trans_matrix_ppt <- trans_matrix
+    rownames(trans_matrix_ppt) <- colnames(trans_matrix_ppt) <- class_names
+    write.csv(trans_matrix_ppt, file=paste(DATA_PATH, "/cluster_", clustnum, 
                                             "_trans_matrix_for_ppt.csv", 
                                             sep=""))
     trans_matrix_long <- data.frame(first=rep(colnames(trans_matrix), 2))
@@ -227,7 +230,7 @@ for (clustnum in 1:length(EA_clusters)) {
     t1 <- getValues(t1)
     t2 <- getValues(t2)
     year <- rep(c(2001, 2010), 2)
-    comp_classes <- rep(classes, each=2)
+    comp_classes <- rep(class_names, each=2)
     percent <- c(sum(t1==1, na.rm=T) / sum(!is.na(t1), na.rm=T),
                  sum(t2==1, na.rm=T) / sum(!is.na(t2), na.rm=T),
                  sum(t1==2, na.rm=T) / sum(!is.na(t1), na.rm=T),

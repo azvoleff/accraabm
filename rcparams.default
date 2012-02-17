@@ -81,9 +81,9 @@
 # represented within the model. This file should be in the raw_input_data path 
 # mentioned above.
 'inputfile.world_mask' : ["cluster_1_area_mask.tif" | novalidation]
-'inputfile.land_cover' : ["cluster_1_NDVI_2001_buffered_500m.tif" | novalidation]
+'inputfile.land_cover' : ["cluster_1_NDVI_2001_buffered_100m.tif" | novalidation]
 'inputfile.sample_population' : ["cluster_1_sample.csv" | novalidation]
-'inputfile.markov_matrix' : ["cluster_1_transition_matrix.csv" | novalidation]
+'inputfile.markov_matrix' : ["cluster_1_trans_matrix.csv" | novalidation]
 
 ###############################################################################
 # Person agent parameters
