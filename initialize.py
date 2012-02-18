@@ -176,15 +176,18 @@ def generate_world():
         to ICPSR and IRB requirements.
     """
     try:
+        Rscript_binary = rcParams['path.Rscript_binary']
         print "Calling R to preprocess WHSA data..."
         raw_data_path = rcParams['path.raw_input_data']
         imagery_path = rcParams['inputfile.imagery']
         WHSA1_path = rcParams['inputfile.WHSA1']
         ACCRA_EA_path = rcParams['inputpath.Accra_EAs']
-        Rscript_binary = rcParams['path.Rscript_binary']
         buffer = str(rcParams['lulc.buffer'])
+        windowed_Markov = str(rcParams['model.Markov_window'])
+        Markov_window_size = str(rcParams['model.Markov_window_size'])
         check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
-            imagery_path, WHSA1_path, ACCRA_EA_path, buffer])
+            imagery_path, WHSA1_path, ACCRA_EA_path, buffer, windowed_Markov,
+            Markov_window_size])
     except CalledProcessError:
         print "ERROR: while running data_preprocess.R R script"
     print "Generating world from preprocessed WHSA data..."

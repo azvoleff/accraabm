@@ -31,20 +31,21 @@ require(raster)
 require(ggplot2)
 require(expm)
 
-#DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
-DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
-#IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
-IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-#WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
+DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
+WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
+ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
+buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
+WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
+MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
+#DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
+#IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
 WHSA2_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-#ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
-ACCRA_EA_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
-#buffer_distance <- commandArgs(trailingOnly=TRUE)[5]
-buffer_distance <- 100
-#WINDOWED_MARKOV <- commandArgs(trailingOnly=TRUE)[6]
-WINDOWED_MARKOV <- TRUE
-#WINDOWED_MARKOV <- commandArgs(trailingOnly=TRUE)[6]
-MARKOV_WINDOW_SIZE <- 5
+#ACCRA_EA_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
+#buffer_distance <- 100
+#WINDOWED_MARKOV <- TRUE
+#MARKOV_WINDOW_SIZE <- 5
+
 # The number of years included in the calibration dataset, so that the 
 # transition matrix can be adjusted to a period of one year.
 MARKOV_CALIBRATION_INTERVAL <- 8 
