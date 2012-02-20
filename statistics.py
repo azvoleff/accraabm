@@ -19,8 +19,8 @@
 # contact information.
 
 """
-Contains statistical models to calulate probabilities (such as of death), and 
-to run markov model (to calculate land use).
+Contains statistical models to calculate probabilities (such as of death), and 
+to run Markov model (to calculate land use).
 """
 
 import numpy as np
@@ -129,17 +129,39 @@ def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
 def predict_self_reported_health(person):
     """
     Calculates the self_reported_health of an agent, using the results of an 
-    OLS regression.
+    ordinal logistic regression (AKA proportional odds model). See Harell 
+    (2001, 333) for formula.
     """
-    result = rcParams['srh.coef.intercept']
-
-    # Individual-level characteristics
-    result += rcParams['srh.coef.hweight08'] * person._hweight08
-    result += rcParams['srh.coef.ethnicity'] * person._ethnicity
-    result += rcParams['srh.coef.religion'] * person._religion
-    result += rcParams['srh.coef.education'] * person._education
-
-    # Neighborhood chararacteristics
-    result += rcParams['srh.coef.veg_fraction'] * person._veg_fraction
-
-    return result
+    prob_y_gte_j = [] # probability y >= j
+    levels = rcParams['srh.olr.depvar_levels']
+    for level, intercept in zip(levels, rcParams['srh.olr.intercepts']):
+        xb_sum = 0
+        # Individual-level characteristics
+        xb_sum += rcParams['srh.olr.coef.age'] * person.get_age()
+        print person.get_age()
+        if person.get_ethnicity() == 1:
+            xb_sum += rcParams['srh.olr.coef.major_ethnic_1']
+        elif person.get_ethnicity() == 2:
+            xb_sum += rcParams['srh.olr.coef.major_ethnic_2']
+        elif person.get_ethnicity() == 3:
+            xb_sum += rcParams['srh.olr.coef.major_ethnic_3']
+        elif person.get_ethnicity() == 4:
+            xb_sum += rcParams['srh.olr.coef.major_ethnic_4']
+        else:
+            raise StatisticsError("Ethnicity %s does not have a specified coefficient"%person.get_ethnicity())
+        xb_sum += rcParams['srh.olr.coef.education'] * person._education
+        # Neighborhood chararacteristics
+        xb_sum += rcParams['srh.olr.coef.veg_fraction'] * person._veg_fraction
+        prob_y_gte_j[level] = 1. / (1 + np.exp(-(intercept + xb_sum)))
+    prob_y_eq_j = np.zeros((1, 4)) # probability y == j
+    prob_y_eq_j[0] = 1 - prob_y_gte_j[0]
+    # Loop over all but the first cell of prob_y_eq_j
+    for j in np.arange(1, (np.shape(prob_y_gte_j)[1] - 1)):
+        prob_y_lt_j = np.sum(prob_y_eq_j[0:j-1])
+        prob_y_eq_j[j] = 1 - prob_y_gte_j[j] - prob_y_lt_j
+    prob_cutoffs = np.cumsum(prob_y_lt_j)
+    rand = np.random.rand()
+    for n in np.arange(0, np.shape(prob_y_gte_j)[1]):
+        if rand <= prob_cutoffs[n]:
+            return levels[n]
+    raise StatisticsError("Check level calculation - no class predicted")
