@@ -97,7 +97,7 @@
 'lulc.NA_value' : [0 | validate_int]
 
 'srh.olr.depvar_levels' : [(1, 2, 3, 4) | validate_nseq_int(4)]
-'srh.olr.intercepts' : [(0, .7902, -0.8158, -3.4634) | validate_nseq_float(4)]
+'srh.olr.intercepts' : [(.7902, -0.8158, -3.4634) | validate_nseq_float(3)]
 'srh.olr.coef.age' : [.0234 | validate_float]
 'srh.olr.coef.major_ethnic_1' : [0 | validate_float]
 'srh.olr.coef.major_ethnic_2' : [.0847 | validate_float]
