@@ -98,11 +98,11 @@ def assemble_persons(populationFile, model_world):
         id = person['id']
         x = float(person['x_utm30'])
         y = float(person['y_utm30'])
-        age = 1
+        age = int(person['age'])
         ses = int(person['ses'])
         sex = 'female'
         hweight08 = float(person['hweight08'])
-        health = int(person['w203_own_health'])
+        health = int(person['srh'])
         education = int(person['education'])
         ethnicity = int(person['major_ethnic'])
         religion = int(person['w116_religion'])
