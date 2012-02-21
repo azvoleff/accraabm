@@ -37,6 +37,9 @@ update_geom_defaults("point", aes(size=3))
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
+time_Robj <- as.Date(paste(timesteps$time_date, "15", sep=","), 
+                     format="%m/%Y,%d")
+timesteps <- cbind(timesteps, time_Robj)
     
 new_mar = par("mar")
 new_mar[1] <- new_mar[1] + .4

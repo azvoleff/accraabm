@@ -27,16 +27,28 @@
 require(automap)
 require(animation)
 require(rgdal)
+require(ggplot2)
 require(raster)
 #require(gstat)
 
+DPI <- 300
+WIDTH <- 9
+HEIGHT <- 5.67
+theme_update(theme_grey(base_size=12))
+update_geom_defaults("point", aes(size=3))
+update_geom_defaults("line", aes(size=1))
+
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
+DATA_PATH <- "M:/Data/Ghana/AccraABM/Runs/Cluster_3/20120220-170519_azvoleff-THINK"
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
+time_Robj <- as.Date(paste(timesteps$time_date, "15", sep=","), 
+                     format="%m/%Y,%d")
+timesteps <- cbind(timesteps, time_Robj)
     
-new_mar = par("mar")
-new_mar[1] <- new_mar[1] + .4
-plot_kriged_health <- function(data_path, timestep) {
+#new_mar = par("mar")
+#new_mar[1] <- new_mar[1] + .4
+plot_kriged_heath <- function(data_path, timestep) {
     # Load the grid on which to Krige. This GeoTIFF also will be used to mask 
     # the final kriging results.
     world_mask <- readGDAL(paste(data_path, "AccraABM_world_mask.tif", sep="/"))
@@ -59,8 +71,24 @@ plot_kriged_health <- function(data_path, timestep) {
           sub=paste("Mean self-reported health:", mean_health))
 }
 
-ani.options(convert=shQuote('C:/Program Files/ImageMagick-6.7.1-Q16/convert.exe'))
-ani.options(outdir=DATA_PATH, ani.width=1200, ani.height=1200)
-animation_file <- "health_animation.gif"
-saveGIF({for (timestep in timesteps$timestep) plot_kriged_health(DATA_PATH, timestep)}, 
-    interval=0.35, movie.name=animation_file)
+calculate_mean_heath <- function(data_path, timesteps) {
+    # Load the grid on which to Krige. This GeoTIFF also will be used to mask 
+    # the final kriging results.
+    mean_healths <- c()
+    for (timestep in timesteps) {
+        persons <- read.csv(paste(data_path, "/psns_time_", timestep, ".csv", sep=""))
+        mean_healths <- c(mean_healths, mean(persons$health))
+    }
+    return(mean_healths)
+}
+#ani.options(convert=shQuote('C:/Program Files/ImageMagick-6.7.1-Q16/convert.exe'))
+#ani.options(outdir=DATA_PATH, ani.width=1200, ani.height=1200)
+#animation_file <- "health_animation.gif"
+#saveGIF({for (timestep in timesteps$timestep) plot_kriged_health(DATA_PATH, timestep)}, 
+#    interval=0.35, movie.name=animation_file)
+
+mean_healths <- calculate_mean_heath(DATA_PATH, timesteps$timestep) 
+mean_healths <- data.frame(health=mean_healths, timevalues=timesteps$time_Robj)
+qplot(time_Robj, health, data=mean_healths, xlab="Time", ylab="Mean Self-reported Health")
+ggsave(filename=paste(DATA_PATH, "/mean_health_plot", ".png", sep=""), width=WIDTH, height=HEIGHT, dpi=DPI)
+
