@@ -82,15 +82,15 @@ def main_loop(world, results_path):
     while model_time.in_bounds():
         world.lulc_markov_transition()
                
-        world.calculate_veg_fractions()
+        mean_veg = world.calculate_veg_fractions()
         for region in world.iter_regions():
             # Save event, LULC, and population data for later output to CSV.
-            region.calc_self_reported_health()
+            mean_health = region.calc_self_reported_health()
 
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
         num_persons = region.num_persons()
-        stats_string = "%s | P: %5s "%(model_time.get_cur_date_string().ljust(7), num_persons)
+        stats_string = "%s | P: %4s | SRS: %.2f | Veg: %.2f"%(model_time.get_cur_date_string().ljust(7), num_persons, mean_health, mean_veg)
         print stats_string
 
         # Save timestep, year and month, and time_float values for use in 

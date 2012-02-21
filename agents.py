@@ -163,8 +163,11 @@ class Region(Agent_set):
         """
         Adds one to the age of each agent. The units of age are dependent on 
         the units of the input rc parameters."""
+        healths = 0.
         for person in self.iter_persons():
             person._health = predict_self_reported_health(person)
+            healths += person._health
+        return healths / self.num_persons()
 
     def num_persons(self):
         "Returns the number of persons in the population."
@@ -405,5 +408,8 @@ class World():
         veg_value = rcParams['lulc.veg_value']
         NA_value = rcParams['lulc.NA_value']
         veg_fractions_dict = calculate_cover_fraction(person_IDs, neighborhoods, veg_value, NA_value)
+        veg_fractions = 0.
         for person in self.iter_persons():
             person._veg_fraction = veg_fractions_dict[person.get_ID()]
+            veg_fractions += person._veg_fraction
+        return veg_fractions / self.num_persons()
