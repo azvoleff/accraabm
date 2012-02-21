@@ -21,7 +21,7 @@
 # contact information.
 
 ###############################################################################
-# This file preprocesses the CVFS data in R and cleans it so that it can be 
+# This file preprocesses the Accra data in R and cleans it so that it can be 
 # used in initialize.py.
 ###############################################################################
 
@@ -30,6 +30,7 @@ require(rgeos) # needed for gBuffer function
 require(raster)
 require(ggplot2)
 require(expm)
+require(sp)
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
@@ -38,13 +39,15 @@ ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
 buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
 WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
 MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
-#DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
-#IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-WHSA2_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-#ACCRA_EA_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
-#buffer_distance <- 100
-#WINDOWED_MARKOV <- TRUE
-#MARKOV_WINDOW_SIZE <- 5
+DATA_PATH <- "M:/Data/Ghana/AccraABM/Initialization"
+#DATA_PATH <- "C:/Users/azvoleff/Desktop/AccraABMTemp"
+IMAGERY_PATH <- "M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+ACCRA_EA_PATH <- "M:/Data/GIS/Ghana/Accra_DB_Export"
+WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
+WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
+buffer_distance <- 100
+WINDOWED_MARKOV <- TRUE
+MARKOV_WINDOW_SIZE <- 5
 
 # The number of years included in the calibration dataset, so that the 
 # transition matrix can be adjusted to a period of one year.
@@ -71,8 +74,9 @@ layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load(WHSA2_FILE)
-whsa2 <- whsa2_spdf
+load(WHSA1_FILE)
+whsa1_spdf <- whsa2_spdf
+whsa1 <- whsa1_spdf
 
 EAs <- readOGR(ACCRA_EA_PATH, "Accra_EAs_Updated")
 # These are the EAs IDs for clusters 1, 3, and 9, in order
@@ -93,10 +97,13 @@ replace_nas <- function(input_vector) {
     return(input_vector)
 }
 
-data_columns <- grep("^(id|x_utm30|y_utm30|w203_own_health|ses|hweight08|ea|major_ethnic|w116_religion|education|hhid)$", names(whsa2))
-whsa2 <- whsa2[, data_columns]
+data_columns <- grep("^(id|x_utm30|y_utm30|w116_religion|srh|ses|hweight08|ea|major_ethnic|age|education|hhid)$", names(whsa1))
+whsa1 <- whsa1[, data_columns]
 
-whsa2$w203_own_health <- replace_nas(whsa2$w203_own_health)
+whsa1$srh <- replace_nas(whsa1$srh)
+whsa1$education <- replace_nas(whsa1$education)
+whsa1$age <- replace_nas(whsa1$age)
+whsa1$major_ethnic <- replace_nas(whsa1$major_ethnic)
 
 ###############################################################################
 # Now output the clusters
@@ -107,12 +114,33 @@ for (clustnum in 1:length(EA_clusters)) {
     # First write out the respondent data
     EA <- EAs[EAs$EA %in% EA_clusters[[clustnum]],]
     EA <- gUnaryUnion(EAs[EAs$EA %in% EA_clusters[[clustnum]],], id=clustnum)
-    sample_pop_rows <- gIntersects(whsa2, EA, byid=TRUE)
-    sample_pop <- whsa2[as.vector(sample_pop_rows),]
+    #EA_spdf <- SpatialPolygonsDataFrame(EA, data=data.frame(ID=row.names(EA)))
+    #writeOGR(EA_spdf, DATA_PATH, paste("cluster_", clustnum, 
+    #                                      "_EA_shapefile", sep=""),
+    #        "ESRI Shapefile", overwrite_layer=TRUE, verbose=TRUE)
+    sample_pop_rows <- gIntersects(whsa1, EA, byid=TRUE)
+    sample_pop <- whsa1[as.vector(sample_pop_rows),]
     write.csv(sample_pop, file=paste(DATA_PATH, "/cluster_", clustnum, 
-                                     "_sample.csv", sep=""), 
-              row.names=FALSE)
-    #writeOGR(sample_pop, DATA_PATH, paste("cluster_", clustnum, 
+                                     "_sample.csv", sep=""), row.names=FALSE)
+    
+    # Also write out summary stats:
+    sample_pop_df <- as.data.frame(sample_pop)
+    var_columns <- grep("^(srh|ses|major_ethnic|age|education)$", names(sample_pop_df))
+    mins <- apply(sample_pop_df[var_columns], 2, function(x) min(as.numeric(x), na.rm=TRUE))
+    maxs <- apply(sample_pop_df[var_columns], 2, function(x) max(as.numeric(x), na.rm=TRUE))
+    means <- apply(sample_pop_df[var_columns], 2, function(x) mean(as.numeric(x), na.rm=TRUE))
+    sds <- apply(sample_pop_df[var_columns], 2, function(x) sd(as.numeric(x), na.rm=TRUE))
+    samp_size <- apply(sample_pop_df[var_columns], 2, function(x) sum(!is.na(x)))
+    summary_stats <- data.frame(mins, maxs, means, sds, samp_size, 
+                                row.names=names(sample_pop_df[var_columns]))
+    write.csv(summary_stats, file=paste(DATA_PATH, "/cluster_", clustnum, 
+                                        "_summary_stats.csv", sep=""))
+
+    sample_pop_ogr <- sample_pop
+    sample_pop_ogr$major_ethnic <- factor(sample_pop_ogr$major_ethnic, ordered=FALSE)
+    sample_pop_ogr$education <- factor(sample_pop_ogr$education, ordered=FALSE)
+    sample_pop_ogr$srh <- factor(sample_pop_ogr$srh, ordered=FALSE)
+    #writeOGR(sample_pop_ogr, DATA_PATH, paste("cluster_", clustnum, 
     #                                      "_sample_shapefile", sep=""),
     #        "ESRI Shapefile", overwrite_layer=TRUE, verbose=TRUE)
     
