@@ -91,4 +91,3 @@ mean_healths <- calculate_mean_heath(DATA_PATH, timesteps$timestep)
 mean_healths <- data.frame(health=mean_healths, timevalues=timesteps$time_Robj)
 qplot(time_Robj, health, data=mean_healths, xlab="Time", ylab="Mean Self-reported Health")
 ggsave(filename=paste(DATA_PATH, "/mean_health_plot", ".png", sep=""), width=WIDTH, height=HEIGHT, dpi=DPI)
-
