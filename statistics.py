@@ -23,8 +23,6 @@ Contains statistical models to calculate probabilities (such as of death), and
 to run Markov model (to calculate land use).
 """
 
-from ipdb import set_trace
-
 import numpy as np
 
 from AccraABM import rcParams
@@ -113,20 +111,32 @@ def draw_from_prob_dist(prob_dist):
     # between those two limits.
     return np.random.uniform(lowbinlim, upbinlim)
 
-def calculate_cover_fraction(person_IDs, egocentric_nbhs, value, NA_value):
-    # Note that areas are expressed in pixels.
-    # In below line, np.invert is use for bitwise not (to select values that 
-    # are NOT nan
-    total_area = np.sum(np.sum(egocentric_nbhs[:,:,:] != NA_value, 1), 0)
-    # Convert total area to float or else it will be an integer/integer for the 
+def calculate_cover_fraction_NBH(person_ids, egocentric_nbhs, value, na_value):
+    # note that areas are expressed in pixels.
+    # in below line, np.invert is use for bitwise not (to select values that 
+    # are not nan
+    total_area = np.sum(np.sum(egocentric_nbhs[:,:,:] != na_value, 1), 0)
+    # convert total area to float or else it will be an integer/integer for the 
     # later division
     total_area = np.array(total_area, dtype="float")
     cover_area = np.sum(np.sum(egocentric_nbhs[:,:,:] == value, 1), 0)
     cover_fractions = (cover_area / total_area)
     cover_fractions_dict = {}
-    for cover_fraction, person_ID in zip(cover_fractions, person_IDs):
-        cover_fractions_dict[person_ID] = cover_fraction
+    for cover_fraction, person_id in zip(cover_fractions, person_ids):
+        cover_fractions_dict[person_id] = cover_fraction
     return cover_fractions_dict
+
+def calculate_cover_fraction_world(lulc, value, na_value):
+    # note that areas are expressed in pixels.
+    # in below line, np.invert is use for bitwise not (to select values that 
+    # are not nan
+    total_area = np.sum(np.sum(lulc != na_value, 1), 0)
+    # convert total area to float or else it will be an integer/integer for the 
+    # later division
+    total_area = float(total_area)
+    cover_area = np.sum(np.sum(lulc == value, 1), 0)
+    cover_fraction = (cover_area / total_area)
+    return cover_fraction
 
 def predict_self_reported_health(person):
     """

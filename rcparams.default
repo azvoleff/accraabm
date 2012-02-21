@@ -45,7 +45,7 @@
 'model.RandomState' : [None | validate_RandomState] 
 # Reinitialize a new world from scratch, or use existing pickled world.
 'model.reinitialize' : [False | validate_boolean] 
-'model.resultspath' : ["G:/Data/Ghana/AccraABM/Runs" | validate_writable_dir]
+'model.resultspath' : ["M:/Data/Ghana/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
 # Whether to produce animation plots of LULC data and health data (otherwise, 
 # only). Requires a working R installation.
@@ -69,14 +69,14 @@
 ###############################################################################
 # This is the path to the processed data file containing the final output file 
 # from the "initialize.py" script.
-'path.initialization_file' : ["G:/Data/Ghana/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
+'path.initialization_file' : ["M:/Data/Ghana/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
 # The following is the path to the original data that is used when running the 
 # "initialize.py" script. The data_preprocess.R script will output several new 
 # files here when it is run, so this directory must be writeable.
-'path.raw_input_data' : ["G:/Data/Ghana/AccraABM/Initialization" | validate_writable_dir]
-'inputfile.imagery' : ["G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
+'path.raw_input_data' : ["M:/Data/Ghana/AccraABM/Initialization" | validate_writable_dir]
+'inputfile.imagery' : ["M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
 'inputfile.WHSA1' : ["D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2.Rdata" | novalidation]
-'inputpath.Accra_EAs' : ["G:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]
+'inputpath.Accra_EAs' : ["M:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]
 # The world_mask is a binary GeoTIFF (zeros and ones), indicating the land area 
 # represented within the model. This file should be in the raw_input_data path 
 # mentioned above.
@@ -91,11 +91,8 @@
 # probability.time_units specifies the time period for which pre-calculated 
 # probabilities are specified.
 'probability.time_units' : ['years' | validate_time_units] 
-# The buffer is specified as the radius in meters
-'lulc.buffer' : [100 | validate_int]
-'lulc.veg_value' : [2 | validate_int]
-'lulc.NA_value' : [0 | validate_int]
-
+# The srh.olr parameters are all related to the self-reported health ordinal 
+# logistic regression.
 'srh.olr.depvar_levels' : [(1, 2, 3, 4) | validate_nseq_int(4)]
 'srh.olr.intercepts' : [(.7902, -0.8158, -3.4634) | validate_nseq_float(3)]
 'srh.olr.coef.age' : [.0234 | validate_float]
@@ -105,3 +102,12 @@
 'srh.olr.coef.major_ethnic_4' : [.2115 | validate_float]
 'srh.olr.coef.education' : [-.1625 | validate_float]
 'srh.olr.coef.veg_fraction' : [-.0033 | validate_float]
+
+###############################################################################
+# Neighborhood LULC calculation parameters
+###############################################################################
+'lulc.use_egocentric' : [False | validate_boolean]
+# The buffer is specified as the radius in meters
+'lulc.buffer' : [100 | validate_int]
+'lulc.veg_value' : [2 | validate_int]
+'lulc.NA_value' : [0 | validate_int]

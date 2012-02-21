@@ -35,7 +35,7 @@ from PyABM import IDGenerator, boolean_choice
 from PyABM.agents import Agent, Agent_set, Agent_Store
 
 from AccraABM import rcParams, random_state
-from AccraABM.statistics import calculate_cover_fraction, predict_self_reported_health
+from AccraABM.statistics import calculate_cover_fraction_NBH, calculate_cover_fraction_world, predict_self_reported_health
 
 if rcParams['model.use_psyco'] == True:
     import psyco
@@ -403,13 +403,28 @@ class World():
         #   0: NA
         #   1: NONVEG
         #   2: VEG
-        buffer = rcParams['lulc.buffer']
-        person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
-        veg_value = rcParams['lulc.veg_value']
-        NA_value = rcParams['lulc.NA_value']
-        veg_fractions_dict = calculate_cover_fraction(person_IDs, neighborhoods, veg_value, NA_value)
-        veg_fractions = 0.
-        for person in self.iter_persons():
-            person._veg_fraction = veg_fractions_dict[person.get_ID()]
-            veg_fractions += person._veg_fraction
-        return veg_fractions / self.num_persons()
+        if rcParams['lulc.use_egocentric']:
+            buffer = rcParams['lulc.buffer']
+            person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
+            veg_value = rcParams['lulc.veg_value']
+            NA_value = rcParams['lulc.NA_value']
+            veg_fractions_dict = calculate_cover_fraction_NBH(person_IDs, neighborhoods, veg_value, NA_value)
+            veg_fractions = 0.
+            for person in self.iter_persons():
+                person._veg_fraction = veg_fractions_dict[person.get_ID()]
+                veg_fractions += person._veg_fraction
+            # Return mean veg fraction for use in progress tracking printout 
+            # while running the model.
+            return veg_fractions / self.num_persons()
+        else:
+            # Otherwise use vernacular neighborhood (veg_fraction calculated 
+            # over the entire world - this works since currently the model is 
+            # only run with a single vernacular neighborhood at a time).
+            veg_value = rcParams['lulc.veg_value']
+            NA_value = rcParams['lulc.NA_value']
+            veg_fraction = calculate_cover_fraction_world(self.get_lulc(), veg_value, NA_value)
+            for person in self.iter_persons():
+                person._veg_fraction = veg_fraction
+            # Return FMV NBH veg fraction for use in progress tracking printout 
+            # while running the model.
+            return veg_fraction
