@@ -39,7 +39,6 @@ update_geom_defaults("point", aes(size=3))
 update_geom_defaults("line", aes(size=1))
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
-DATA_PATH <- "M:/Data/Ghana/AccraABM/Runs/Cluster_3/20120220-170519_azvoleff-THINK"
 
 timesteps <- read.csv(paste(DATA_PATH, "/time.csv", sep=""))
 time_Robj <- as.Date(paste(timesteps$time_date, "15", sep=","), 
