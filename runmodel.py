@@ -145,7 +145,7 @@ def main(argv=None):
     write_time_csv(time_strings, time_csv_file)
     
     if rcParams['model.make_LULC_animations']:
-        print "Plotting LULC results..."
+        print "Saving LULC plots..."
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
@@ -156,7 +156,7 @@ def main(argv=None):
         dev_null.close()
 
     if rcParams['model.make_health_animations']:
-        print "Plotting health results..."
+        print "Saving health plots..."
         Rscript_binary = rcParams['path.Rscript_binary']
         dev_null = open(os.devnull, 'w')
         try:
@@ -184,6 +184,7 @@ def main(argv=None):
         speed, commit_hash)
     write_RC_file(run_RC_file, RC_file_header, rcParams)
 
+    print "Results saved to %s"%results_path
     print "\nFinished at", time.strftime("%m/%d/%Y %I:%M:%S %p") + "."
 
     return 0
