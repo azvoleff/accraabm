@@ -419,11 +419,11 @@ class World(Agent_set):
         #   0: NA
         #   1: NONVEG
         #   2: VEG
+        veg_value = rcParams['lulc.veg_value']
+        NA_value = rcParams['lulc.NA_value']
         if rcParams['lulc.use_egocentric']:
             buffer = rcParams['lulc.buffer']
             person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
-            veg_value = rcParams['lulc.veg_value']
-            NA_value = rcParams['lulc.NA_value']
             veg_fractions_dict = calculate_cover_fraction_NBH(person_IDs, neighborhoods, veg_value, NA_value)
             veg_fractions = 0.
             for person in self.iter_persons():
@@ -436,8 +436,6 @@ class World(Agent_set):
             # Otherwise use vernacular neighborhood (veg_fraction calculated 
             # over the entire world - this works since currently the model is 
             # only run with a single vernacular neighborhood at a time).
-            veg_value = rcParams['lulc.veg_value']
-            NA_value = rcParams['lulc.NA_value']
             veg_fraction = calculate_cover_fraction_world(self.get_lulc(), veg_value, NA_value)
             for person in self.iter_persons():
                 person._veg_fraction = veg_fraction
