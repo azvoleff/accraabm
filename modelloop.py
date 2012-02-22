@@ -84,6 +84,7 @@ def main_loop(world, results_path):
                
         mean_veg = world.calculate_veg_fractions()
         for region in world.iter_regions():
+            region.increment_age()
             # Save event, LULC, and population data for later output to CSV.
             mean_health = region.calc_self_reported_health()
 
