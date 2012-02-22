@@ -35,14 +35,14 @@ require(sp)
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
 WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
-ACCRA_EA_PATH <- commandArgs(trailingOnly=TRUE)[4]
+FMV_PATH <- commandArgs(trailingOnly=TRUE)[4]
 buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
 WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
 MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
-DATA_PATH <- "M:/Data/Ghana/AccraABM/Initialization"
+DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
 #DATA_PATH <- "C:/Users/azvoleff/Desktop/AccraABMTemp"
-IMAGERY_PATH <- "M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-ACCRA_EA_PATH <- "M:/Data/GIS/Ghana/Accra_DB_Export"
+IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+FMV_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
 WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
 WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
 buffer_distance <- 100
@@ -78,14 +78,12 @@ load(WHSA1_FILE)
 whsa1_spdf <- whsa2_spdf
 whsa1 <- whsa1_spdf
 
-EAs <- readOGR(ACCRA_EA_PATH, "Accra_EAs_Updated")
-# These are the EAs IDs for clusters 1, 3, and 9, in order
-#EA_clusters <- list(c(605017, 605029, 605030, 605014, 605006, 605039),
-#                    c(506001, 505048),
-#                    c(502023, 502012, 502009))
-EA_clusters <- list(c(505038, 505001, 505013, 505029, 505030),
-                    c(502023, 502012, 502009, 502011),
-                    c(605003, 605016, 605005, 605006))
+FMVs <- readOGR(FMV_PATH, "FMVNeighborhoods")
+# The FMVs are:
+#   31: Dansoman Estate
+#   67: Nima
+#   70: North Kaneshie
+Chosen_FMV_IDs <- c(31, 67, 70)
 ###############################################################################
 # Clean the data
 ###############################################################################
@@ -110,19 +108,18 @@ whsa1$major_ethnic <- replace_nas(whsa1$major_ethnic)
 ###############################################################################
 
 # Cut out each cluster from the raster and calculate Markov transition matrices
-for (clustnum in 1:length(EA_clusters)) {
+for (FMV_num in 1:length(Chosen_FMV_IDs)) {
     # First write out the respondent data
-    EA <- EAs[EAs$EA %in% EA_clusters[[clustnum]],]
-    EA <- gUnaryUnion(EAs[EAs$EA %in% EA_clusters[[clustnum]],], id=clustnum)
-    #EA_spdf <- SpatialPolygonsDataFrame(EA, data=data.frame(ID=row.names(EA)))
-    #writeOGR(EA_spdf, DATA_PATH, paste("cluster_", clustnum, 
-    #                                      "_EA_shapefile", sep=""),
+    FMV <- FMVs[FMVs$FMV_Number == Chosen_FMV_IDs[FMV_num],]
+    FMV_name <- abbreviate(FMV$FMV_Name, minlength=6)
+    sample_pop_rows <- gIntersects(whsa2_spdf, FMV, byid=TRUE)
+    #FMV_spdf <- SpatialPolygonsDataFrame(FMV, data=data.frame(ID=row.names(FMV)))
+    #writeOGR(FMV_spdf, DATA_PATH, paste("cluster_", FMV_name, 
+    #                                      "_FMV_shapefile", sep=""),
     #        "ESRI Shapefile", overwrite_layer=TRUE, verbose=TRUE)
-    sample_pop_rows <- gIntersects(whsa1, EA, byid=TRUE)
     sample_pop <- whsa1[as.vector(sample_pop_rows),]
-    write.csv(sample_pop, file=paste(DATA_PATH, "/cluster_", clustnum, 
+    write.csv(sample_pop, file=paste(DATA_PATH, "/cluster_", FMV_name, 
                                      "_sample.csv", sep=""), row.names=FALSE)
-    
     # Also write out summary stats:
     sample_pop_df <- as.data.frame(sample_pop)
     var_columns <- grep("^(srh|ses|major_ethnic|age|education)$", names(sample_pop_df))
@@ -133,34 +130,32 @@ for (clustnum in 1:length(EA_clusters)) {
     samp_size <- apply(sample_pop_df[var_columns], 2, function(x) sum(!is.na(x)))
     summary_stats <- data.frame(mins, maxs, means, sds, samp_size, 
                                 row.names=names(sample_pop_df[var_columns]))
-    write.csv(summary_stats, file=paste(DATA_PATH, "/cluster_", clustnum, 
+    write.csv(summary_stats, file=paste(DATA_PATH, "/cluster_", FMV_name, 
                                         "_summary_stats.csv", sep=""))
-
-    sample_pop_ogr <- sample_pop
-    sample_pop_ogr$major_ethnic <- factor(sample_pop_ogr$major_ethnic, ordered=FALSE)
-    sample_pop_ogr$education <- factor(sample_pop_ogr$education, ordered=FALSE)
-    sample_pop_ogr$srh <- factor(sample_pop_ogr$srh, ordered=FALSE)
-    #writeOGR(sample_pop_ogr, DATA_PATH, paste("cluster_", clustnum, 
+    #sample_pop_ogr <- sample_pop
+    #sample_pop_ogr$major_ethnic <- factor(sample_pop_ogr$major_ethnic, ordered=FALSE)
+    #sample_pop_ogr$education <- factor(sample_pop_ogr$education, ordered=FALSE)
+    #sample_pop_ogr$srh <- factor(sample_pop_ogr$srh, ordered=FALSE)
+    #writeOGR(sample_pop_ogr, DATA_PATH, paste("cluster_", FMV_name, 
     #                                      "_sample_shapefile", sep=""),
     #        "ESRI Shapefile", overwrite_layer=TRUE, verbose=TRUE)
     
-    clipped_imagery <- crop(imagery, EA)
+    clipped_imagery <- crop(imagery, FMV)
     #plot(clipped_imagery)
-    cluster_mask <- rasterize(EA, clipped_imagery)
+    cluster_mask <- rasterize(FMV, clipped_imagery)
     # Save this mask to use it later in the ABM as a "study area mask"
-    writeRaster(cluster_mask, filename=paste(DATA_PATH, "/cluster_", clustnum, 
+    writeRaster(cluster_mask, filename=paste(DATA_PATH, "/cluster_", FMV_name, 
                                              "_area_mask.tif", sep=""), 
                 format="Gtiff", overwrite=TRUE)
     clipped_imagery <- cluster_mask * clipped_imagery
     layerNames(clipped_imagery) <- layer_names
-
     # Also prepare a buffered version of the neighborhood
-    cluster_poly <- gBuffer(EA, width=buffer_distance)
+    cluster_poly <- gBuffer(FMV, width=buffer_distance)
     clipped_imagery_buffered <- crop(imagery, cluster_poly)
     cluster_mask_buffered <- rasterize(cluster_poly, clipped_imagery_buffered)
     # Save this mask to use it later in the ABM as a "study area mask"
     writeRaster(cluster_mask_buffered, filename=paste(DATA_PATH, "/cluster_", 
-                                                      clustnum, 
+                                                      FMV_name, 
                                                       "_area_mask_buffered.tif", 
                                                       sep=""),
                 format="Gtiff", overwrite=TRUE)
@@ -169,10 +164,10 @@ for (clustnum in 1:length(EA_clusters)) {
     
     for (layernum in 1:nlayers(clipped_imagery)) {
         # First write out the raster clipped to this cluster
-        writeRaster(subset(clipped_imagery, layernum), filename=paste(DATA_PATH, "/cluster_", clustnum, "_", layerNames(clipped_imagery)[layernum],".tif", sep=""), format="Gtiff", overwrite=TRUE)
+        writeRaster(subset(clipped_imagery, layernum), filename=paste(DATA_PATH, "/cluster_", FMV_name, "_", layerNames(clipped_imagery)[layernum],".tif", sep=""), format="Gtiff", overwrite=TRUE)
         # Now write out the raster clipped to the buffered areas surrounding 
         # this cluster
-        writeRaster(subset(clipped_imagery_buffered, layernum), filename=paste(DATA_PATH, "/cluster_", clustnum, "_", layerNames(clipped_imagery_buffered)[layernum], "_buffered_", buffer_distance,"m.tif", sep=""), format="Gtiff", overwrite=TRUE)
+        writeRaster(subset(clipped_imagery_buffered, layernum), filename=paste(DATA_PATH, "/cluster_", FMV_name, "_", layerNames(clipped_imagery_buffered)[layernum], "_buffered_", buffer_distance,"m.tif", sep=""), format="Gtiff", overwrite=TRUE)
     }
 
     # NDVI classes:
@@ -212,7 +207,7 @@ for (clustnum in 1:length(EA_clusters)) {
     # Also save a version of the matrix with textual class names, for ppt, etc.
     trans_matrix_ppt <- trans_matrix
     rownames(trans_matrix_ppt) <- colnames(trans_matrix_ppt) <- class_names
-    write.csv(trans_matrix_ppt, file=paste(DATA_PATH, "/cluster_", clustnum, 
+    write.csv(trans_matrix_ppt, file=paste(DATA_PATH, "/cluster_", FMV_name, 
                                             "_trans_matrix_for_ppt.csv", 
                                             sep=""))
     trans_matrix_long <- data.frame(first=rep(colnames(trans_matrix), 2))
@@ -223,14 +218,12 @@ for (clustnum in 1:length(EA_clusters)) {
         class2 <- trans_matrix_long$second[n]
         trans_matrix_long$Freq[n] <- trans_matrix[class1, class2]
     }
-
     for (value in unique(trans_matrix_long$first)) {
         value_rows <- trans_matrix_long$first==value
         value_total <- sum(trans_matrix_long$Freq[value_rows])
         trans_matrix_long$Freq[value_rows] <- 
             trans_matrix_long$Freq[value_rows] / value_total
     }
-
     # Need to sort the transition matrix so the upper and lower bounds can be 
     # set for the random assignment (based on these probabilities) In the 
     new_col <- rep(NA, nrow(trans_matrix_long))
@@ -253,12 +246,12 @@ for (clustnum in 1:length(EA_clusters)) {
     }
     # Now drop the unneeded "Freq" column.
     trans_matrix_long <- trans_matrix_long[!names(trans_matrix_long)=="Freq"]
-    write.csv(trans_matrix_long, file=paste(DATA_PATH, "/cluster_", clustnum, "_trans_matrix.csv", sep=""), row.names=FALSE)
+    write.csv(trans_matrix_long, file=paste(DATA_PATH, "/cluster_", FMV_name, "_trans_matrix.csv", sep=""), row.names=FALSE)
 
     # Make plot of changes in composition (to use in powerpoints)
     t1 <- getValues(t1)
     t2 <- getValues(t2)
-    year <- rep(c(2001, 2010), 2)
+    year <- rep(c(2002, 2010), 2)
     comp_classes <- rep(class_names, each=2)
     percent <- c(sum(t1==1, na.rm=T) / sum(!is.na(t1), na.rm=T),
                  sum(t2==1, na.rm=T) / sum(!is.na(t2), na.rm=T),
@@ -266,10 +259,9 @@ for (clustnum in 1:length(EA_clusters)) {
                  sum(t2==2, na.rm=T) / sum(!is.na(t2), na.rm=T))
     changes <- data.frame(year, percent, class=comp_classes)
     qplot(year, percent, geom="line", colour=class, data=changes)
-    ggsave(paste(DATA_PATH, "/cluster_", clustnum, "_composition_plot.png", sep=""), dpi=DPI, width=WIDTH, height=HEIGHT)
-    write.csv(changes, file=paste(DATA_PATH, "/cluster_", clustnum, "_composition_data.csv", sep=""), row.names=FALSE)
-
-    png(file=paste(DATA_PATH, "/cluster_", clustnum, "_map.png", sep=""), width=6.5, height=6.5, units="in",  res=300)
+    ggsave(paste(DATA_PATH, "/cluster_", FMV_name, "_composition_plot.png", sep=""), dpi=DPI, width=WIDTH, height=HEIGHT)
+    write.csv(changes, file=paste(DATA_PATH, "/cluster_", FMV_name, "_composition_data.csv", sep=""), row.names=FALSE)
+    png(file=paste(DATA_PATH, "/cluster_", FMV_name, "_map.png", sep=""), width=6.5, height=6.5, units="in",  res=300)
     brks <- c(0, 1, 2, 3, 4)
     nbrks <- length(brks) - 1
     plot(clipped_imagery, col=rev(rainbow(nbrks)), lab.breaks=brks)
