@@ -28,6 +28,7 @@ Alex Zvoleff, azvoleff@mail.sdsu.edu
 
 import os
 import sys
+import copy
 
 import numpy as np
 import pickle
@@ -153,7 +154,13 @@ def assemble_world():
         region.add_agent(person)
 
     print "\nPersons: %s, Region shape: %s"%(region.num_persons(), np.shape(model_world.get_lulc()))
-
+    
+    # Save a list of the original agents used to initialize the region. This 
+    # list will be in re-sampling as the model runs, to repopulate the region 
+    # as agents die.
+    region._original_agents = []
+    for person in persons:
+        region._original_agents.append(copy.copy(person))
     return model_world
 
 def save_world(world, filename):
