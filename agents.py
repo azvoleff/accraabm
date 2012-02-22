@@ -54,13 +54,13 @@ class Person(Agent):
         # initialize the model their birthdates will be negative.
         self._birthdate = birthdate
 
-        # self._age is used as a convenience to avoid the need to calculate the 
+        # self._age_months is used as a convenience to avoid the need to calculate the 
         # agent's age from self._birthdate each time it is needed. It is         
         # important to remember though that all agent's ages must be 
         # incremented with each model timestep, and are expressed in months.
         # The age starts at 0 (it is zero for the entire first timestep of the 
         # model).
-        self._age = age
+        self._age_months = age
 
         # deathdate is used for tracking agent deaths in the results, mainly 
         # for debugging.
@@ -106,8 +106,11 @@ class Person(Agent):
     def get_sex(self):
         return self._sex
 
-    def get_age(self):
-        return self._age
+    def get_age_months(self):
+        return self._age_months
+
+    def get_age_years(self):
+        return self._age_months / 12.
 
     def get_ethnicity(self):
         return self._ethnicity
@@ -156,7 +159,7 @@ class Region(Agent_set):
         """
         for person in self.iter_persons():
             timestep = rcParams['model.timestep']
-            person._age += timestep
+            person._age_months += timestep
 
     def calc_self_reported_health(self):
         """
@@ -335,7 +338,7 @@ class World():
                 new_row.append(person._y)
                 new_row.append(person.get_parent_agent().get_ID())
                 new_row.append(person.get_sex())
-                new_row.append(person.get_age())
+                new_row.append(person.get_age_years())
                 new_row.append(person._education)
                 new_row.append(person._ses)
                 new_row.append(person._health)

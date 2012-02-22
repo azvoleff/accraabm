@@ -150,7 +150,7 @@ def predict_self_reported_health(person):
         intercept = rcParams['srh.olr.intercepts'][n]
         xb_sum = 0
         # Individual-level characteristics
-        xb_sum += rcParams['srh.olr.coef.age'] * person.get_age()
+        xb_sum += rcParams['srh.olr.coef.age'] * person.get_age_years()
         if person.get_ethnicity() == 1:
             xb_sum += rcParams['srh.olr.coef.major_ethnic_1']
         elif person.get_ethnicity() == 2:
