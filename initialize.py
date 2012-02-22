@@ -105,11 +105,10 @@ def assemble_persons(populationFile, model_world):
         health = int(person['srh'])
         education = int(person['education'])
         ethnicity = int(person['major_ethnic'])
-        religion = int(person['w116_religion'])
         ea = person['ea']
         initial_agent = True
         person = model_world.new_person(None, id, age,
-                sex, initial_agent, ethnicity, religion, education, ea, hweight08, ses, x, y, 
+                sex, initial_agent, ethnicity, education, ea, hweight08, ses, x, y, 
                 health)
         persons.append(person)
         
@@ -175,21 +174,25 @@ def generate_world():
         be an encrypted directory that is not publically accessible to conform 
         to ICPSR and IRB requirements.
     """
-    try:
-        Rscript_binary = rcParams['path.Rscript_binary']
-        print "Calling R to preprocess WHSA data..."
-        raw_data_path = rcParams['path.raw_input_data']
-        imagery_path = rcParams['inputfile.imagery']
-        WHSA1_path = rcParams['inputfile.WHSA1']
-        ACCRA_EA_path = rcParams['inputpath.Accra_EAs']
-        buffer = str(rcParams['lulc.buffer'])
-        windowed_Markov = str(rcParams['model.Markov_window'])
-        Markov_window_size = str(rcParams['model.Markov_window_size'])
-        check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
-            imagery_path, WHSA1_path, ACCRA_EA_path, buffer, windowed_Markov,
-            Markov_window_size])
-    except CalledProcessError:
-        print "ERROR: while running data_preprocess.R R script"
+    print
+    if rcParams['model.reinitialize.run_R_script']:
+        try:
+            Rscript_binary = rcParams['path.Rscript_binary']
+            print "Calling R to preprocess WHSA data..."
+            raw_data_path = rcParams['path.raw_input_data']
+            imagery_path = rcParams['inputfile.imagery']
+            WHSA1_path = rcParams['inputfile.WHSA1']
+            ACCRA_EA_path = rcParams['inputpath.Accra_EAs']
+            buffer = str(rcParams['lulc.buffer'])
+            windowed_Markov = str(rcParams['model.Markov_window'])
+            Markov_window_size = str(rcParams['model.Markov_window_size'])
+            check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
+                imagery_path, WHSA1_path, ACCRA_EA_path, buffer, windowed_Markov,
+                Markov_window_size])
+        except CalledProcessError:
+            print "ERROR: while running data_preprocess.R script"
+    else:
+        print "Skipping call of data_preprocess.R..."
     print "Generating world from preprocessed WHSA data..."
     model_world = assemble_world()
 

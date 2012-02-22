@@ -44,7 +44,7 @@ if rcParams['model.use_psyco'] == True:
 class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
-            initial_agent=False, ethnicity=None, religion=None, education=None, 
+            initial_agent=False, ethnicity=None, education=None, 
             EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
         Agent.__init__(self, world, PID, initial_agent)
 
@@ -85,7 +85,6 @@ class Person(Agent):
 
         self._ethnicity = ethnicity
         self._education = education
-        self._religion = religion
         self._EA = EA
         self._hweight08 = hweight08
         self._ses = ses
@@ -277,7 +276,7 @@ class World():
         self.set_lulc(new_lu)
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
-            initial_agent=False, ethnicity=None, religion=None, education=None, 
+            initial_agent=False, ethnicity=None, education=None, 
             EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
         "Returns a new person agent."
         if PID == None:
@@ -286,7 +285,7 @@ class World():
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                religion, education, EA, hweight08, ses, x, y, health)
+                education, EA, hweight08, ses, x, y, health)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -327,7 +326,7 @@ class World():
         psn_csv_file = os.path.join(results_path, "psns_time_%s.csv"%timestep)
         out_file = open(psn_csv_file, "w")
         csv_writer = csv.writer(out_file)
-        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "religion", "education", "ses", "health", "ethnicity", "veg_fraction"])
+        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "education", "ses", "health", "ethnicity", "veg_fraction"])
         for region in self.iter_regions():
             for person in region.iter_persons():
                 new_row = []
@@ -337,7 +336,6 @@ class World():
                 new_row.append(person.get_parent_agent().get_ID())
                 new_row.append(person.get_sex())
                 new_row.append(person.get_age())
-                new_row.append(person._religion)
                 new_row.append(person._education)
                 new_row.append(person._ses)
                 new_row.append(person._health)
