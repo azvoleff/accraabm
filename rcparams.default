@@ -108,6 +108,8 @@
 'srh.olr.coef.education' : [-.1625 | validate_float]
 'srh.olr.coef.veg_fraction' : [-.0033 | validate_float]
 
+'probability.death.female' : [{(0, 15):.005894619, (15, 60):.005117363, (60, 199):0.04850143} | validate_probability(0, 199)]
+
 ###############################################################################
 # Neighborhood LULC calculation parameters
 ###############################################################################

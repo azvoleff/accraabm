@@ -35,7 +35,7 @@ from PyABM import IDGenerator, boolean_choice
 from PyABM.agents import Agent, Agent_set, Agent_Store
 
 from AccraABM import rcParams, random_state
-from AccraABM.statistics import calculate_cover_fraction_NBH, calculate_cover_fraction_world, predict_self_reported_health
+from AccraABM.statistics import calculate_cover_fraction_NBH, calculate_cover_fraction_world, predict_self_reported_health, calc_probability_death
 
 if rcParams['model.use_psyco'] == True:
     import psyco
@@ -121,6 +121,7 @@ class Person(Agent):
     def kill(self, time):
         self._alive = False
         self._deathdate = time
+        self.get_parent_agent().remove_agent(self)
 
     def __str__(self):
         return "Person(PID: %s. EA: %s.)" %(self.get_ID(), self.get_parent_agent().get_ID())
@@ -151,6 +152,15 @@ class Region(Agent_set):
     def get_persons(self):
         "Returns an iterator over all the persons in the region"
         return self._members.values()
+
+    def deaths(self, time):
+        """Runs through the population and kills agents probabilistically based 
+        on their age and the probability.death for this population"""
+        num_deaths = 0
+        for person in self.iter_persons():
+            if random_state.rand() < calc_probability_death(person):
+                num_deaths += 1
+        return num_deaths
 
     def increment_age(self):
         """

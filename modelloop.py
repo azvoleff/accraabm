@@ -87,11 +87,12 @@ def main_loop(world, results_path):
             region.increment_age()
             # Save event, LULC, and population data for later output to CSV.
             mean_health = region.calc_self_reported_health()
+            num_deaths = region.deaths(model_time.get_cur_date_float())
 
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
         num_persons = region.num_persons()
-        stats_string = "%s | P: %4s | SRS: %.2f | Veg: %.2f"%(model_time.get_cur_date_string().ljust(7), num_persons, mean_health, mean_veg)
+        stats_string = "%s | P: %4s | D: %4s | SRS: %.2f | Veg: %.2f"%(model_time.get_cur_date_string().ljust(7), num_persons, num_deaths, mean_health, mean_veg)
         print stats_string
 
         # Save timestep, year and month, and time_float values for use in 

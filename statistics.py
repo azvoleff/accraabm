@@ -36,26 +36,7 @@ probability_time_units = rcParams['probability.time_units']
 class UnitsError(Exception):
     pass
 
-def convert_probability_units(probability):
-    """
-    Converts probability so units match timestep used in the model, assuming probability 
-    function is uniform across the interval.
-
-    Conversions are made accordingly using conditional probability.
-    """
-    # If the probability time units don't match the model timestep units, then the 
-    # probabilities need to be converted.
-    if probability_time_units == 'months':
-        pass
-    elif probability_time_units == 'years':
-        for key, value in probability.iteritems():
-            probability[key] = 1 - (1 - value)**(1/12.)
-    elif probability_time_units == 'decades':
-        for key, value in probability.iteritems():
-            probability[key] = 1 - (1 - value)**(1/120.)
-    else:
-        raise UnitsError("unhandled probability_time_units")
-    return probability
+death_probabilities_female = rcParams['probability.death.female']
 
 def __probability_index__(t):
     """
@@ -76,13 +57,10 @@ def __probability_index__(t):
 
 def calc_probability_death(person):
     "Calculates the probability of death for an agent."
-    age = person.get_age()
+    age = person.get_age_months()
     probability_index = __probability_index__(age)
     try:
-        if person.get_sex() == 'female':
-            return death_probabilities_female[probability_index]
-        elif person.get_sex() == 'male':
-            return death_probabilities_male[probability_index]
+        return death_probabilities_female[probability_index]
     except IndexError:
         raise IndexError("error calculating death probability (index %s)"%(probability_index))
 
