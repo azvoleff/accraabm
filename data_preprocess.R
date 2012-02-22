@@ -39,15 +39,15 @@ FMV_PATH <- commandArgs(trailingOnly=TRUE)[4]
 buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
 WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
 MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
-DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
+#DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
 #DATA_PATH <- "C:/Users/azvoleff/Desktop/AccraABMTemp"
-IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-FMV_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
-WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
+#IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+#FMV_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
+#WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
 WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-buffer_distance <- 100
-WINDOWED_MARKOV <- TRUE
-MARKOV_WINDOW_SIZE <- 5
+#buffer_distance <- 100
+#WINDOWED_MARKOV <- TRUE
+#MARKOV_WINDOW_SIZE <- 5
 
 # The number of years included in the calibration dataset, so that the 
 # transition matrix can be adjusted to a period of one year.
