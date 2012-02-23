@@ -400,9 +400,9 @@ class World(Agent_set):
             y = round((y - min_y) / np.abs(pixel_height), 0)*np.abs(pixel_height) + min_y + np.abs(pixel_height)/2
             center_x, center_y = convert_to_img_coords(x, y)
             # In the below lines ul means "upper left", lr means "lower right"
-            ul_x, ul_y = center_x-buffer_pixels_x, center_y+buffer_pixels_y+1
-            lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
-            box = lulc_array[lr_y:ul_y, ul_x:lr_x]
+            ul_x, ul_y = center_x-buffer_pixels_x, center_y-buffer_pixels_y+1 # here buffer_pixels_y is positive but remember y increases going down in the image
+            lr_x, lr_y = center_x+buffer_pixels_x+1, center_y+buffer_pixels_y
+            box = lulc_array[ul_y:lr_y, ul_x:lr_x]
             # TODO: The commented out line below should eventually replace the 
             # one following it for storing the box in the data array. The 
             # current line is used to ensure NANs get filled in areas where the 
