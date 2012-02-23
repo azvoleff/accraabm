@@ -210,7 +210,7 @@ class World(Agent_set):
         self._PIDGen = IDGenerator()
         self._RIDGen = IDGenerator()
 
-    def set_DEM_data(world_mask, gt, prj):
+    def set_DEM_data(DEM, gt, prj):
         self._DEM_array = DEM
         self._DEM_gt = gt
         self._DEM_prj = prj
@@ -375,21 +375,18 @@ class World(Agent_set):
         rows, cols = np.shape(lulc_array)
         min_x = gt[0]
         max_y = gt[3]
-        pixel_width = np.abs(gt[1])
-        pixel_height = np.abs(gt[5]) # note pixel_height is negative
+        pixel_width = gt[1]
+        pixel_height = gt[5] # note pixel_height is negative
         max_x = min_x + cols * pixel_width
-        min_y = max_y - rows * pixel_height
+        min_y = max_y + rows * pixel_height
         buffer_pixels_x = int(np.round(buffer / pixel_width, 0))
-        buffer_pixels_y = int(np.round(buffer / pixel_height, 0))
+        buffer_pixels_y = int(np.round(buffer / np.abs(pixel_height), 0))
         def convert_to_img_coords(x, y):
             img_x = int((x - min_x)/pixel_width)
-            img_y = int((y - min_y)/pixel_height)
+            img_y = int((y - max_y)/pixel_height)
             return img_x, img_y
-        data = np.empty((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
-        data[:] = np.nan
+        data = np.zeros((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
         person_IDs = []
-        x_out = 0
-        y_out = 0
         n = -1
         for person in self.iter_persons():
             n += 1
@@ -400,17 +397,18 @@ class World(Agent_set):
             assert ((y - buffer) > min_y) & ((y + buffer) < max_y), "Neighborhood must be within raster image"
             # Round off coordinates to the nearest center of a cell
             x = round((x - min_x) / pixel_width, 0)*pixel_width + min_x + pixel_width/2
-            y = round((y - min_y) / pixel_width, 0)*pixel_width + min_y + pixel_width/2
+            y = round((y - min_y) / np.abs(pixel_height), 0)*np.abs(pixel_height) + min_y + np.abs(pixel_height)/2
             center_x, center_y = convert_to_img_coords(x, y)
             # In the below lines ul means "upper left", lr means "lower right"
             ul_x, ul_y = center_x-buffer_pixels_x, center_y+buffer_pixels_y+1
             lr_x, lr_y = center_x+buffer_pixels_x+1, center_y-buffer_pixels_y
-            box = lulc_array[ul_x:lr_x, lr_y:ul_y]
+            box = lulc_array[lr_y:ul_y, ul_x:lr_x]
             # TODO: The commented out line below should eventually replace the 
             # one following it for storing the box in the data array. The 
             # current line is used to ensure NANs get filled in areas where the 
             # neighborhood boundary for a person is outside the image.
             #data[:,:,n] = box
+            assert np.shape(box) == np.shape(data)[0:2], "NBH box must always cover a full NBH"
             data[0:np.shape(box)[0], 0:np.shape(box)[1], n] = box
         return person_IDs, data
 
