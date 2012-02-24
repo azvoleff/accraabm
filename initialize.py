@@ -189,13 +189,13 @@ def generate_world():
             print "Calling R to preprocess WHSA data..."
             raw_data_path = rcParams['path.raw_input_data']
             imagery_path = rcParams['inputfile.imagery']
-            WHSA1_path = rcParams['inputfile.WHSA1']
+            WHSA_path = rcParams['inputfile.WHSA']
             Accra_FMV_path = rcParams['inputpath.Accra_FMVs']
             buffer = str(rcParams['lulc.buffer'])
             windowed_Markov = str(rcParams['model.Markov_window'])
             Markov_window_size = str(rcParams['model.Markov_window_size'])
             check_call([Rscript_binary, "data_preprocess.R", raw_data_path, 
-                imagery_path, WHSA1_path, Accra_FMV_path, buffer, windowed_Markov,
+                imagery_path, WHSA_path, Accra_FMV_path, buffer, windowed_Markov,
                 Markov_window_size])
         except CalledProcessError:
             print "ERROR: while running data_preprocess.R script"

@@ -123,26 +123,30 @@ def predict_self_reported_health(person):
     ordinal logistic regression (AKA proportional odds model). See Harell 
     (2001, 333) for formula.
     """
-    levels = rcParams['srh.olr.depvar_levels']
+    if rcParams['lulc.use_egocentric']:
+        prefix = 'srh.olr.ego'
+    else:
+        prefix = 'srh.olr.fmv'
+    levels = rcParams[prefix + '.depvar_levels']
     prob_y_gte_j = np.zeros(len(levels) - 1) # probability y >= j
     for n in np.arange(len(prob_y_gte_j)):
-        intercept = rcParams['srh.olr.intercepts'][n]
+        intercept = rcParams[prefix + '.intercepts'][n]
         xb_sum = 0
         # Individual-level characteristics
-        xb_sum += rcParams['srh.olr.coef.age'] * person.get_age_years()
+        xb_sum += rcParams[prefix + '.coef.age'] * person.get_age_years()
         if person.get_ethnicity() == 1:
-            xb_sum += rcParams['srh.olr.coef.major_ethnic_1']
+            xb_sum += rcParams[prefix + '.coef.major_ethnic_1']
         elif person.get_ethnicity() == 2:
-            xb_sum += rcParams['srh.olr.coef.major_ethnic_2']
+            xb_sum += rcParams[prefix + '.coef.major_ethnic_2']
         elif person.get_ethnicity() == 3:
-            xb_sum += rcParams['srh.olr.coef.major_ethnic_3']
+            xb_sum += rcParams[prefix + '.coef.major_ethnic_3']
         elif person.get_ethnicity() == 4:
-            xb_sum += rcParams['srh.olr.coef.major_ethnic_4']
+            xb_sum += rcParams[prefix + '.coef.major_ethnic_4']
         else:
             raise StatisticsError("Ethnicity %s does not have a specified coefficient"%person.get_ethnicity())
-        xb_sum += rcParams['srh.olr.coef.education'] * person._education
+        xb_sum += rcParams[prefix + '.coef.education'] * person._education
         # Neighborhood chararacteristics
-        xb_sum += rcParams['srh.olr.coef.veg_fraction'] * person._veg_fraction
+        xb_sum += rcParams[prefix + '.coef.veg_fraction'] * person._veg_fraction
         prob_y_gte_j[n] = 1. / (1 + np.exp(-(intercept + xb_sum)))
     prob_y_eq_j = np.zeros(4) # probability y == j
     prob_y_eq_j[0] = 1 - prob_y_gte_j[0]
