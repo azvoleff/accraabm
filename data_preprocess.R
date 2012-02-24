@@ -34,20 +34,19 @@ require(sp)
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
-WHSA1_FILE <- commandArgs(trailingOnly=TRUE)[3]
+WHSA_FILE <- commandArgs(trailingOnly=TRUE)[3]
 FMV_PATH <- commandArgs(trailingOnly=TRUE)[4]
 buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
 WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
 MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
-#DATA_PATH <- "G:/Data/Ghana/AccraABM/Initialization"
-#DATA_PATH <- "C:/Users/azvoleff/Desktop/AccraABMTemp"
-#IMAGERY_PATH <- "G:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
-#FMV_PATH <- "G:/Data/GIS/Ghana/Accra_DB_Export"
-#WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_spdf.Rdata"
-WHSA1_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata"
-#buffer_distance <- 100
-#WINDOWED_MARKOV <- TRUE
-#MARKOV_WINDOW_SIZE <- 5
+
+DATA_PATH <- "M:/Data/Ghana/AccraABM/Initialization"
+IMAGERY_PATH <- "M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+WHSA_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_whsa2linked.Rdata"
+FMV_PATH <- "M:/Data/GIS/Ghana/Accra_DB_Export"
+buffer_distance <- 100
+WINDOWED_MARKOV <- TRUE
+MARKOV_WINDOW_SIZE <- 5
 
 # The number of years included in the calibration dataset, so that the 
 # transition matrix can be adjusted to a period of one year.
@@ -74,9 +73,9 @@ layer_names <- c("NDVI_2001", "NDVI_2010", "VIS")
 layerNames(imagery) <- layer_names
 
 # Now load the human survey data
-load(WHSA1_FILE)
-whsa1_spdf <- whsa2_spdf
-whsa1 <- whsa1_spdf
+load(WHSA_FILE)
+#whsa <- whsa2_spdf_FMV_ego
+whsa <- whsa1_whsa2linked
 
 FMVs <- readOGR(FMV_PATH, "FMVNeighborhoods")
 # The FMVs are:
@@ -95,13 +94,13 @@ replace_nas <- function(input_vector) {
     return(input_vector)
 }
 
-data_columns <- grep("^(id|x_utm30|y_utm30|w116_religion|srh|ses|hweight08|ea|major_ethnic|age|education|hhid)$", names(whsa1))
-whsa1 <- whsa1[, data_columns]
+data_columns <- grep("^(id|x_utm30|y_utm30|w116_religion|srh|ses|hweight08|ea|major_ethnic|age|education|hhid)$", names(whsa))
+whsa <- whsa[, data_columns]
 
-whsa1$srh <- replace_nas(whsa1$srh)
-whsa1$education <- replace_nas(whsa1$education)
-whsa1$age <- replace_nas(whsa1$age)
-whsa1$major_ethnic <- replace_nas(whsa1$major_ethnic)
+whsa$srh <- replace_nas(whsa$srh)
+whsa$education <- replace_nas(whsa$education)
+whsa$age <- replace_nas(whsa$age)
+whsa$major_ethnic <- replace_nas(whsa$major_ethnic)
 
 ###############################################################################
 # Now output the clusters
@@ -112,12 +111,12 @@ for (FMV_num in 1:length(Chosen_FMV_IDs)) {
     # First write out the respondent data
     FMV <- FMVs[FMVs$FMV_Number == Chosen_FMV_IDs[FMV_num],]
     FMV_name <- abbreviate(FMV$FMV_Name, minlength=6)
-    sample_pop_rows <- gIntersects(whsa2_spdf, FMV, byid=TRUE)
+    sample_pop_rows <- gIntersects(whsa, FMV, byid=TRUE)
     #FMV_spdf <- SpatialPolygonsDataFrame(FMV, data=data.frame(ID=row.names(FMV)))
     #writeOGR(FMV_spdf, DATA_PATH, paste("cluster_", FMV_name, 
     #                                      "_FMV_shapefile", sep=""),
     #        "ESRI Shapefile", overwrite_layer=TRUE, verbose=TRUE)
-    sample_pop <- whsa1[as.vector(sample_pop_rows),]
+    sample_pop <- whsa[as.vector(sample_pop_rows),]
     write.csv(sample_pop, file=paste(DATA_PATH, "/cluster_", FMV_name, 
                                      "_sample.csv", sep=""), row.names=FALSE)
     # Also write out summary stats:
@@ -161,7 +160,6 @@ for (FMV_num in 1:length(Chosen_FMV_IDs)) {
                 format="Gtiff", overwrite=TRUE)
     clipped_imagery_buffered <- cluster_mask_buffered * clipped_imagery_buffered
     layerNames(clipped_imagery_buffered ) <- layer_names
-    
     for (layernum in 1:nlayers(clipped_imagery)) {
         # First write out the raster clipped to this cluster
         writeRaster(subset(clipped_imagery, layernum), filename=paste(DATA_PATH, "/cluster_", FMV_name, "_", layerNames(clipped_imagery)[layernum],".tif", sep=""), format="Gtiff", overwrite=TRUE)
@@ -201,6 +199,7 @@ for (FMV_num in 1:length(Chosen_FMV_IDs)) {
         trans_matrix_cal <- crosstab(t1, t2)
         trans_matrix_cal <- trans_matrix_cal / rowSums(trans_matrix_cal)
     }
+
     # Now convert to per-year transition probabilities:
     trans_matrix <- expm((1/MARKOV_CALIBRATION_INTERVAL) * logm(trans_matrix_cal))
     rownames(trans_matrix) <- colnames(trans_matrix) <- class_codes
