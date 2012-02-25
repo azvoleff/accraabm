@@ -46,7 +46,7 @@ class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, education=None, 
-            EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
+            ses=None, x=None, y=None, health=None):
         Agent.__init__(self, world, PID, initial_agent)
 
         # birthdate is the timestep of the birth of the agent. It is used to 
@@ -86,8 +86,6 @@ class Person(Agent):
 
         self._ethnicity = ethnicity
         self._education = education
-        self._EA = EA
-        self._hweight08 = hweight08
         self._ses = ses
         self._health = health
 
@@ -125,7 +123,7 @@ class Person(Agent):
         self.get_parent_agent().remove_agent(self)
 
     def __str__(self):
-        return "Person(PID: %s. EA: %s.)" %(self.get_ID(), self.get_parent_agent().get_ID())
+        return "Person(PID: %s. RID: %s.)" %(self.get_ID(), self.get_parent_agent().get_ID())
 
 class Region(Agent_set):
     """Represents a set of agents sharing a spatial area (and therefore 
@@ -295,7 +293,7 @@ class World(Agent_set):
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, education=None, 
-            EA=None, hweight08=None, ses=None, x=None, y=None, health=None):
+            ses=None, x=None, y=None, health=None):
         "Returns a new person agent."
         if PID == None:
             PID = self._PIDGen.next()
@@ -303,7 +301,7 @@ class World(Agent_set):
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                education, EA, hweight08, ses, x, y, health)
+                education, ses, x, y, health)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -385,7 +383,7 @@ class World(Agent_set):
             img_x = int((x - min_x)/pixel_width)
             img_y = int((y - max_y)/pixel_height)
             return img_x, img_y
-        data = np.zeros((2*buffer_pixels_x+1, 2*buffer_pixels_y+1, self.num_persons()), dtype='int8')
+        data = np.zeros((2*buffer_pixels_x, 2*buffer_pixels_y, self.num_persons()), dtype='int8')
         person_IDs = []
         n = -1
         for person in self.iter_persons():
@@ -400,8 +398,8 @@ class World(Agent_set):
             y = round((y - min_y) / np.abs(pixel_height), 0)*np.abs(pixel_height) + min_y + np.abs(pixel_height)/2
             center_x, center_y = convert_to_img_coords(x, y)
             # In the below lines ul means "upper left", lr means "lower right"
-            ul_x, ul_y = center_x-buffer_pixels_x, center_y-buffer_pixels_y+1 # here buffer_pixels_y is positive but remember y increases going down in the image
-            lr_x, lr_y = center_x+buffer_pixels_x+1, center_y+buffer_pixels_y
+            ul_x, ul_y = center_x-buffer_pixels_x+1, center_y-buffer_pixels_y+1 # here buffer_pixels_y is positive but remember y increases going down in the image
+            lr_x, lr_y = center_x+buffer_pixels_x+1, center_y+buffer_pixels_y+1
             box = lulc_array[ul_y:lr_y, ul_x:lr_x]
             # TODO: The commented out line below should eventually replace the 
             # one following it for storing the box in the data array. The 

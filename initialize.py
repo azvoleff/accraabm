@@ -103,14 +103,12 @@ def assemble_persons(populationFile, model_world):
         age_months = int(person['age']) * 12
         ses = int(person['ses'])
         sex = 'female'
-        hweight08 = float(person['hweight08'])
         health = int(person['srh'])
         education = int(person['education'])
         ethnicity = int(person['major_ethnic'])
-        ea = person['ea']
         initial_agent = True
         person = model_world.new_person(None, id, age_months,
-                sex, initial_agent, ethnicity, education, ea, hweight08, ses, x, y, 
+                sex, initial_agent, ethnicity, education, ses, x, y, 
                 health)
         persons.append(person)
         
