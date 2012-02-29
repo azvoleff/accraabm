@@ -98,6 +98,7 @@
 # probabilities (such as for mortality) are specified.
 'probability.time_units' : ['years' | validate_time_units] 
 'probability.death.female' : [{(0, 15):.005894619, (15, 60):.005117363, (60, 199):0.04850143} | validate_probability(0, 199)]
+'model.kill_agents' : [False | validate_boolean] 
 # The srh.olr parameters are all related to the self-reported health ordinal 
 # logistic regression.
 'srh.olr.ego.depvar_levels' : [(1, 2, 3, 4) | validate_nseq_int(4)]

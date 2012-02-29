@@ -87,7 +87,11 @@ def main_loop(world, results_path):
             region.increment_age()
             # Save event, LULC, and population data for later output to CSV.
             mean_health = region.calc_self_reported_health()
-            num_deaths = region.deaths(model_time.get_cur_date_float())
+
+            if rcParams['model.kill_agents'] == True:
+                num_deaths = region.deaths(model_time.get_cur_date_float())
+            else:
+                num_deaths = 0
 
         # Print an information line to allow keeping tabs on the model while it 
         # is running.
