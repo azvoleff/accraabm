@@ -132,7 +132,7 @@ def predict_physical_functioning(person):
     ##################################
     # Note that in the regression model the coefficient for veg fraction is 
     # calculated on the log of the (percentage veg in NBH + 1)
-    xb_sum = rcParams[prefix + '.coef.veg_fraction'] * np.log(person._veg_fraction*100 + 1)
+    xb_sum = rcParams[prefix + '.coef.log_veg_fraction'] * np.log(person._veg_fraction*100 + 1)
 
     ##################################
     # Individual-level characteristics
@@ -152,33 +152,35 @@ def predict_physical_functioning(person):
     else:
         raise StatisticsError("Ethnicity %s does not have a specified coefficient"%person.get_ethnicity())
 
-    if person.get_education() == 1:
+    if person._education == 0:
+        xb_sum += rcParams[prefix + '.coef.education_0']
+    elif person._education == 1:
         xb_sum += rcParams[prefix + '.coef.education_1']
-    elif person.get_education() == 2:
+    elif person._education == 2:
         xb_sum += rcParams[prefix + '.coef.education_2']
-    elif person.get_education() == 3:
+    elif person._education == 3:
         xb_sum += rcParams[prefix + '.coef.education_3']
-    elif person.get_education() == 4:
+    elif person._education == 4:
         xb_sum += rcParams[prefix + '.coef.education_4']
     else:
-        raise StatisticsError("Education %s does not have a specified coefficient"%person.get_education())
+        raise StatisticsError("Education %s does not have a specified coefficient"%person._education)
 
-    xb_sum += rcParams[prefix + '.coef.Charcoal'] * person._Charcoal
+    xb_sum += rcParams[prefix + '.coef.charcoal'] * person._charcoal
 
-    xb_sum += rcParams[prefix + '.coef.OwnToilet'] * person._OwnToilet
+    xb_sum += rcParams[prefix + '.coef.own_toilet'] * person._own_toilet
 
-    if person.get_yrs_in_house_cat() == 1:
+    if person._yrs_in_house_cat == "5":
         xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_0']
-    elif person.get_yrs_in_house_cat() == 2:
+    elif person._yrs_in_house_cat == "15":
         xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_5']
-    elif person.get_yrs_in_house_cat() == 3:
+    elif person._yrs_in_house_cat == "30":
         xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_15']
-    elif person.get_yrs_in_house_cat() == 4:
+    elif person._yrs_in_house_cat == ">30":
         xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_gt30']
     else:
-        raise StatisticsError("Yrs_In_House_Cat %s does not have a specified coefficient"%person.get_yrs_in_house_cat())
+        raise StatisticsError("Yrs_In_House_Cat %s does not have a specified coefficient"%person._yrs_in_house_cat)
 
     # Intercept
-    xb_sum += rcParams[prefix + '.coef.intercept'] * person._intercept
+    xb_sum += rcParams[prefix + '.coef.intercept']
 
-    raise StatisticsError("Check level calculation - no class predicted")
+    return xb_sum

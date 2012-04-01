@@ -46,7 +46,7 @@ class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, education=None, charcoal=None, 
-            own_toilet=None, x=None, y=None, health=None):
+            own_toilet=None, yrs_in_house_cat=None, x=None, y=None, health=None):
         Agent.__init__(self, world, PID, initial_agent)
 
         # birthdate is the timestep of the birth of the agent. It is used to 
@@ -88,6 +88,7 @@ class Person(Agent):
         self._education = education
         self._charcoal = charcoal
         self._own_toilet = own_toilet
+        self._yrs_in_house_cat = yrs_in_house_cat
         self._health = health
 
         self._x = x
@@ -294,7 +295,7 @@ class World(Agent_set):
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
             initial_agent=False, ethnicity=None, education=None, charcoal=None, 
-            own_toilet=None, x=None, y=None, health=None):
+            own_toilet=None, yrs_in_house_cat=None, x=None, y=None, health=None):
         "Returns a new person agent."
         if PID == None:
             PID = self._PIDGen.next()
@@ -302,7 +303,7 @@ class World(Agent_set):
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                education, charcoal, own_toilet, x, y, health)
+                education, charcoal, own_toilet, yrs_in_house_cat, x, y, health)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -343,7 +344,7 @@ class World(Agent_set):
         psn_csv_file = os.path.join(results_path, "psns_time_%s.csv"%timestep)
         out_file = open(psn_csv_file, "w")
         csv_writer = csv.writer(out_file)
-        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "education", "charcoal", "own_toilet", "health", "ethnicity", "veg_fraction"])
+        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "education", "charcoal", "own_toilet", "yrs_in_house_cat", "health", "ethnicity", "veg_fraction"])
         for region in self.iter_regions():
             for person in region.iter_persons():
                 new_row = []
@@ -354,9 +355,10 @@ class World(Agent_set):
                 new_row.append(person.get_sex())
                 new_row.append(person.get_age_years())
                 new_row.append(person._education)
-                new_row.append(person._health)
                 new_row.append(person._charcoal)
                 new_row.append(person._own_toilet)
+                new_row.append(person._yrs_in_house_cat)
+                new_row.append(person._health)
                 new_row.append(person._ethnicity)
                 new_row.append(person._veg_fraction)
                 csv_writer.writerow(new_row)

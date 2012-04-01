@@ -105,11 +105,12 @@ def assemble_persons(populationFile, model_world):
         health = int(person['rand_sf36_pf'])
         education = int(person['education'])
         charcoal = bool(person['Charcoal'])
+        yrs_in_house_cat = str(person['YrsInHouse_Cat'])
         own_toilet = bool(person['OwnToilet'])
         ethnicity = int(person['major_ethnic'])
         initial_agent = True
         person = model_world.new_person(None, id, age_months,
-                sex, initial_agent, ethnicity, education, charcoal, own_toilet, x, y, 
+                sex, initial_agent, ethnicity, education, charcoal, own_toilet, yrs_in_house_cat, x, y, 
                 health)
         persons.append(person)
         
