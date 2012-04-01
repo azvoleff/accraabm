@@ -36,7 +36,7 @@ from PyABM import IDGenerator, boolean_choice
 from PyABM.agents import Agent, Agent_set, Agent_Store
 
 from AccraABM import rcParams, random_state
-from AccraABM.statistics import calculate_cover_fraction_NBH, calculate_cover_fraction_world, predict_self_reported_health, calc_probability_death
+from AccraABM.statistics import calculate_cover_fraction_NBH, calculate_cover_fraction_world, predict_physical_functioning, calc_probability_death
 
 if rcParams['model.use_psyco'] == True:
     import psyco
@@ -45,8 +45,8 @@ if rcParams['model.use_psyco'] == True:
 class Person(Agent):
     "Represents a single person agent"
     def __init__(self, world, birthdate, PID=None, age=0, sex=None, 
-            initial_agent=False, ethnicity=None, education=None, 
-            ses=None, x=None, y=None, health=None):
+            initial_agent=False, ethnicity=None, education=None, charcoal=None, 
+            own_toilet=None, x=None, y=None, health=None):
         Agent.__init__(self, world, PID, initial_agent)
 
         # birthdate is the timestep of the birth of the agent. It is used to 
@@ -86,7 +86,8 @@ class Person(Agent):
 
         self._ethnicity = ethnicity
         self._education = education
-        self._ses = ses
+        self._charcoal = charcoal
+        self._own_toilet = own_toilet
         self._health = health
 
         self._x = x
@@ -182,7 +183,7 @@ class Region(Agent_set):
         the units of the input rc parameters."""
         healths = 0.
         for person in self.iter_persons():
-            person._health = predict_self_reported_health(person)
+            person._health = predict_physical_functioning(person)
             healths += person._health
         return healths / self.num_persons()
 
@@ -292,8 +293,8 @@ class World(Agent_set):
         self.set_lulc(new_lu)
 
     def new_person(self, birthdate, PID=None, age=0, sex=None, 
-            initial_agent=False, ethnicity=None, education=None, 
-            ses=None, x=None, y=None, health=None):
+            initial_agent=False, ethnicity=None, education=None, charcoal=None, 
+            own_toilet=None, x=None, y=None, health=None):
         "Returns a new person agent."
         if PID == None:
             PID = self._PIDGen.next()
@@ -301,7 +302,7 @@ class World(Agent_set):
             # Update the generator so the PID will not be reused
             self._PIDGen.use_ID(PID)
         return Person(self, birthdate, PID, age, sex, initial_agent, ethnicity, 
-                education, ses, x, y, health)
+                education, charcoal, own_toilet, x, y, health)
 
     def new_region(self, RID=None, initial_agent=False):
         "Returns a new region agent, and adds it to the world member list."
@@ -342,7 +343,7 @@ class World(Agent_set):
         psn_csv_file = os.path.join(results_path, "psns_time_%s.csv"%timestep)
         out_file = open(psn_csv_file, "w")
         csv_writer = csv.writer(out_file)
-        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "education", "ses", "health", "ethnicity", "veg_fraction"])
+        csv_writer.writerow(["pid", "x_utm30", "y_utm30", "rid", "gender", "age", "education", "charcoal", "own_toilet", "health", "ethnicity", "veg_fraction"])
         for region in self.iter_regions():
             for person in region.iter_persons():
                 new_row = []
@@ -353,8 +354,9 @@ class World(Agent_set):
                 new_row.append(person.get_sex())
                 new_row.append(person.get_age_years())
                 new_row.append(person._education)
-                new_row.append(person._ses)
                 new_row.append(person._health)
+                new_row.append(person._charcoal)
+                new_row.append(person._own_toilet)
                 new_row.append(person._ethnicity)
                 new_row.append(person._veg_fraction)
                 csv_writer.writerow(new_row)

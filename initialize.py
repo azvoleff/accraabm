@@ -101,14 +101,15 @@ def assemble_persons(populationFile, model_world):
         y = float(person['y_utm30'])
         # Note that age is converted to months.
         age_months = int(person['age']) * 12
-        ses = int(person['ses'])
         sex = 'female'
-        health = int(person['srh'])
+        health = int(person['rand_sf36_pf'])
         education = int(person['education'])
+        charcoal = bool(person['Charcoal'])
+        own_toilet = bool(person['OwnToilet'])
         ethnicity = int(person['major_ethnic'])
         initial_agent = True
         person = model_world.new_person(None, id, age_months,
-                sex, initial_agent, ethnicity, education, ses, x, y, 
+                sex, initial_agent, ethnicity, education, charcoal, own_toilet, x, y, 
                 health)
         persons.append(person)
         

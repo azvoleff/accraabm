@@ -117,47 +117,68 @@ def calculate_cover_fraction_world(lulc, value, na_value):
     cover_fraction = (cover_area / total_area)
     return cover_fraction
 
-def predict_self_reported_health(person):
+def predict_physical_functioning(person):
     """
-    Calculates the self_reported_health of an agent, using the results of an 
-    ordinal logistic regression (AKA proportional odds model). See Harell 
-    (2001, 333) for formula.
+    Calculates the physical functioning score of an agent, using the results of 
+    a spatial autoregressive lag model.
     """
     if rcParams['lulc.use_egocentric']:
-        prefix = 'srh.olr.ego'
+        prefix = 'reg.pf.Ego'
     else:
-        prefix = 'srh.olr.fmv'
-    levels = rcParams[prefix + '.depvar_levels']
-    prob_y_gte_j = np.zeros(len(levels) - 1) # probability y >= j
-    for n in np.arange(len(prob_y_gte_j)):
-        intercept = rcParams[prefix + '.intercepts'][n]
-        xb_sum = 0
-        # Individual-level characteristics
-        xb_sum += rcParams[prefix + '.coef.age'] * person.get_age_years()
-        if person.get_ethnicity() == 1:
-            xb_sum += rcParams[prefix + '.coef.major_ethnic_1']
-        elif person.get_ethnicity() == 2:
-            xb_sum += rcParams[prefix + '.coef.major_ethnic_2']
-        elif person.get_ethnicity() == 3:
-            xb_sum += rcParams[prefix + '.coef.major_ethnic_3']
-        elif person.get_ethnicity() == 4:
-            xb_sum += rcParams[prefix + '.coef.major_ethnic_4']
-        else:
-            raise StatisticsError("Ethnicity %s does not have a specified coefficient"%person.get_ethnicity())
-        xb_sum += rcParams[prefix + '.coef.education'] * person._education
-        # Neighborhood chararacteristics
-        xb_sum += rcParams[prefix + '.coef.veg_fraction'] * person._veg_fraction
-        prob_y_gte_j[n] = 1. / (1 + np.exp(-(intercept + xb_sum)))
-    prob_y_eq_j = np.zeros(4) # probability y == j
-    prob_y_eq_j[0] = 1 - prob_y_gte_j[0]
-    # Loop over all but the first cell of prob_y_eq_j
-    for j in np.arange(1, len(prob_y_gte_j)):
-        prob_y_lt_j = np.sum(prob_y_eq_j[0:j])
-        prob_y_eq_j[j] = 1 - prob_y_gte_j[j] - prob_y_lt_j
-    prob_cutoffs = np.cumsum(prob_y_eq_j)
-    prob_cutoffs[-1]  = 1
-    rand = np.random.rand()
-    for n in np.arange(len(prob_cutoffs)):
-        if rand <= prob_cutoffs[n]:
-            return levels[n]
+        prefix = 'reg.pf.FMV'
+
+    ##################################
+    # Neighborhood characteristics
+    ##################################
+    # Note that in the regression model the coefficient for veg fraction is 
+    # calculated on the log of the (percentage veg in NBH + 1)
+    xb_sum = rcParams[prefix + '.coef.veg_fraction'] * np.log(person._veg_fraction*100 + 1)
+
+    ##################################
+    # Individual-level characteristics
+    ##################################
+    xb_sum += rcParams[prefix + '.coef.age'] * person.get_age_years()
+
+    xb_sum += rcParams[prefix + '.coef.age_squared'] * (person.get_age_years()**2)
+
+    if person.get_ethnicity() == 1:
+        xb_sum += rcParams[prefix + '.coef.major_ethnic_1']
+    elif person.get_ethnicity() == 2:
+        xb_sum += rcParams[prefix + '.coef.major_ethnic_2']
+    elif person.get_ethnicity() == 3:
+        xb_sum += rcParams[prefix + '.coef.major_ethnic_3']
+    elif person.get_ethnicity() == 4:
+        xb_sum += rcParams[prefix + '.coef.major_ethnic_4']
+    else:
+        raise StatisticsError("Ethnicity %s does not have a specified coefficient"%person.get_ethnicity())
+
+    if person.get_education() == 1:
+        xb_sum += rcParams[prefix + '.coef.education_1']
+    elif person.get_education() == 2:
+        xb_sum += rcParams[prefix + '.coef.education_2']
+    elif person.get_education() == 3:
+        xb_sum += rcParams[prefix + '.coef.education_3']
+    elif person.get_education() == 4:
+        xb_sum += rcParams[prefix + '.coef.education_4']
+    else:
+        raise StatisticsError("Education %s does not have a specified coefficient"%person.get_education())
+
+    xb_sum += rcParams[prefix + '.coef.Charcoal'] * person._Charcoal
+
+    xb_sum += rcParams[prefix + '.coef.OwnToilet'] * person._OwnToilet
+
+    if person.get_yrs_in_house_cat() == 1:
+        xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_0']
+    elif person.get_yrs_in_house_cat() == 2:
+        xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_5']
+    elif person.get_yrs_in_house_cat() == 3:
+        xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_15']
+    elif person.get_yrs_in_house_cat() == 4:
+        xb_sum += rcParams[prefix + '.coef.yrs_in_house_cat_gt30']
+    else:
+        raise StatisticsError("Yrs_In_House_Cat %s does not have a specified coefficient"%person.get_yrs_in_house_cat())
+
+    # Intercept
+    xb_sum += rcParams[prefix + '.coef.intercept'] * person._intercept
+
     raise StatisticsError("Check level calculation - no class predicted")

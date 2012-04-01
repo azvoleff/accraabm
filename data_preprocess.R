@@ -40,11 +40,11 @@ buffer_distance <- as.numeric(commandArgs(trailingOnly=TRUE)[5])
 WINDOWED_MARKOV <- as.logical(commandArgs(trailingOnly=TRUE)[6])
 MARKOV_WINDOW_SIZE <- as.numeric(commandArgs(trailingOnly=TRUE)[7])
 
-DATA_PATH <- "M:/Data/Ghana/AccraABM/Initialization"
-IMAGERY_PATH <- "M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
+DATA_PATH <- "R:/Data/Ghana/AccraABM/Initialization"
+IMAGERY_PATH <- "R:/Data/Ghana/Imagery/Layer_Stack/NDVI2002_NDVI2010_VIS.tif"
 WHSA_FILE <- "D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_whsa2linked.Rdata"
-FMV_PATH <- "M:/Data/GIS/Ghana/Accra_DB_Export"
-buffer_distance <- 100
+FMV_PATH <- "R:/Data/Ghana/GIS/Accra_DB_Export"
+buffer_distance <- 700
 WINDOWED_MARKOV <- TRUE
 MARKOV_WINDOW_SIZE <- 5
 
@@ -94,13 +94,15 @@ replace_nas <- function(input_vector) {
     return(input_vector)
 }
 
-data_columns <- grep("^(id|x_utm30|y_utm30|w116_religion|srh|ses|hweight08|ea|major_ethnic|age|education|hhid)$", names(whsa))
+data_columns <- grep("^(id|x_utm30|y_utm30|rand_sf36_pf|ea|major_ethnic|age|education|Charcoal|OwnToilet|YrsInHouse_Cat|hhid)$", names(whsa))
 whsa <- whsa[, data_columns]
 
-whsa$srh <- replace_nas(whsa$srh)
 whsa$education <- replace_nas(whsa$education)
 whsa$age <- replace_nas(whsa$age)
 whsa$major_ethnic <- replace_nas(whsa$major_ethnic)
+whsa$OwnToilet <- replace_nas(whsa$OwnToilet)
+whsa$Charcoal <- replace_nas(whsa$Charcoal)
+whsa$YrsInHouse_Cat <- replace_nas(whsa$YrsInHouse_Cat)
 
 ###############################################################################
 # Now output the clusters
@@ -121,7 +123,7 @@ for (FMV_num in 1:length(Chosen_FMV_IDs)) {
                                      "_sample.csv", sep=""), row.names=FALSE)
     # Also write out summary stats:
     sample_pop_df <- as.data.frame(sample_pop)
-    var_columns <- grep("^(srh|ses|major_ethnic|age|education)$", names(sample_pop_df))
+    var_columns <- grep("^(rand_sf36_pf|major_ethnic|age|education|YrsInHouse_Cat|Charcoal|OwnToilet)$", names(sample_pop_df))
     mins <- apply(sample_pop_df[var_columns], 2, function(x) min(as.numeric(x), na.rm=TRUE))
     maxs <- apply(sample_pop_df[var_columns], 2, function(x) max(as.numeric(x), na.rm=TRUE))
     means <- apply(sample_pop_df[var_columns], 2, function(x) mean(as.numeric(x), na.rm=TRUE))

@@ -50,7 +50,7 @@
 # process. This should only be necessary if changes have been made to any of 
 # the raw data files.
 'model.reinitialize.run_R_script' : [True | validate_boolean] 
-'model.resultspath' : ["M:/Data/Ghana/AccraABM/Runs" | validate_writable_dir]
+'model.resultspath' : ["R:/Data/Ghana/AccraABM/Runs" | validate_writable_dir]
 'model.use_psyco': [False | validate_boolean] # Not yet supported in Python 2.7
 # Whether to produce animation plots of LULC data and health data (otherwise, 
 # only). Requires a working R installation.
@@ -74,15 +74,15 @@
 ###############################################################################
 # This is the path to the processed data file containing the final output file 
 # from the "initialize.py" script.
-'path.initialization_file' : ["M:/Data/Ghana/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
+'path.initialization_file' : ["R:/Data/Ghana/AccraABM/Initialization/init_data.pickle" | validate_readable_file_warning]
 # The following is the path to the original data that is used when running the 
 # "initialize.py" script. The data_preprocess.R script will output several new 
 # files here when it is run, so this directory must be writeable.
-'path.raw_input_data' : ["M:/Data/Ghana/AccraABM/Initialization" | validate_writable_dir]
-'inputfile.imagery' : ["M:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
+'path.raw_input_data' : ["R:/Data/Ghana/AccraABM/Initialization" | validate_writable_dir]
+'inputfile.imagery' : ["R:/Data/Imagery/Ghana/Layer_Stack/NDVI2002_NDVI2010_VIS.tif" | novalidation]
 #'inputfile.WHSA' : ["D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa2_spdf.Rdata" | novalidation]
 'inputfile.WHSA' : ["D:/Shared_Documents/SDSU/Ghana/AccraABM/whsa1_whsa2linked.Rdata" | novalidation]
-'inputpath.Accra_FMVs' : ["M:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]
+'inputpath.Accra_FMVs' : ["R:/Data/GIS/Ghana/Accra_DB_Export" | novalidation]
 # The world_mask is a binary GeoTIFF (zeros and ones), indicating the land area 
 # represented within the model. This file should be in the raw_input_data path 
 # mentioned above.
@@ -134,7 +134,8 @@
 'reg.pf.FMV.coef.education_0' : [0 | validate_float]
 'reg.pf.FMV.coef.education_1' : [2.46 | validate_float]
 'reg.pf.FMV.coef.education_2' : [3.45 | validate_float]
-'reg.pf.FMV.coef.education_3' : [4.04 | validate_float]
+'reg.pf.FMV.coef.education_3' : [3.79 | validate_float]
+'reg.pf.FMV.coef.education_4' : [4.04 | validate_float]
 'reg.pf.FMV.coef.charcoal' : [.41 | validate_float]
 'reg.pf.FMV.coef.hastoilet' : [-1.63 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_0' : [0 | validate_float]
