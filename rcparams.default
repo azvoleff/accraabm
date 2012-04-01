@@ -99,33 +99,56 @@
 'probability.time_units' : ['years' | validate_time_units] 
 'probability.death.female' : [{(0, 15):.005894619, (15, 60):.005117363, (60, 199):0.04850143} | validate_probability(0, 199)]
 'model.kill_agents' : [False | validate_boolean] 
-# The srh.olr parameters are all related to the self-reported health ordinal 
-# logistic regression.
-'srh.olr.ego.depvar_levels' : [(1, 2, 3, 4) | validate_nseq_int(4)]
-'srh.olr.ego.intercepts' : [(.7596, -0.847, -3.4943) | validate_nseq_float(3)]
-'srh.olr.ego.coef.age' : [.0430 | validate_float]
-'srh.olr.ego.coef.major_ethnic_1' : [0 | validate_float]
-'srh.olr.ego.coef.major_ethnic_2' : [.0781 | validate_float]
-'srh.olr.ego.coef.major_ethnic_3' : [.0486 | validate_float]
-'srh.olr.ego.coef.major_ethnic_4' : [.2067 | validate_float]
-'srh.olr.ego.coef.education' : [-.1582 | validate_float]
-'srh.olr.ego.coef.veg_fraction' : [-.0072 | validate_float]
 
-'srh.olr.fmv.depvar_levels' : [(1, 2, 3, 4) | validate_nseq_int(4)]
-'srh.olr.fmv.intercepts' : [(.8226, -0.7856, -3.4292) | validate_nseq_float(3)]
-'srh.olr.fmv.coef.age' : [.0430 | validate_float]
-'srh.olr.fmv.coef.major_ethnic_1' : [0 | validate_float]
-'srh.olr.fmv.coef.major_ethnic_2' : [.0748 | validate_float]
-'srh.olr.fmv.coef.major_ethnic_3' : [.0510 | validate_float]
-'srh.olr.fmv.coef.major_ethnic_4' : [.1923 | validate_float]
-'srh.olr.fmv.coef.education' : [-.1551 | validate_float]
-'srh.olr.fmv.coef.veg_fraction' : [-.9057 | validate_float]
+# The reg.pf.Ego parameters are all related to the self-reported health 
+# autoregressive model run for egocentric neighborhoods.
+'reg.pf.Ego.coef.log_veg_fraction' : [1.50 | validate_float]
+'reg.pf.Ego.coef.age' : [.34 | validate_float]
+'reg.pf.Ego.coef.age_squared' : [-.01 | validate_float]
+'reg.pf.Ego.coef.major_ethnic_0' : [0 | validate_float]
+'reg.pf.Ego.coef.major_ethnic_1' : [-1.70  | validate_float]
+'reg.pf.Ego.coef.major_ethnic_2' : [-1.34 | validate_float]
+'reg.pf.Ego.coef.major_ethnic_3' : [-.96 | validate_float]
+'reg.pf.Ego.coef.education_0' : [0 | validate_float]
+'reg.pf.Ego.coef.education_1' : [2.38 | validate_float]
+'reg.pf.Ego.coef.education_2' : [3.42 | validate_float]
+'reg.pf.Ego.coef.education_3' : [3.76 | validate_float]
+'reg.pf.Ego.coef.education_4' : [4.08 | validate_float]
+'reg.pf.Ego.coef.charcoal' : [.30 | validate_float]
+'reg.pf.Ego.coef.hastoilet' : [-1.53 | validate_float]
+'reg.pf.Ego.coef.yrs_in_house_cat_0' : [0 | validate_float]
+'reg.pf.Ego.coef.yrs_in_house_cat_5' : [.47 | validate_float]
+'reg.pf.Ego.coef.yrs_in_house_cat_15' : [-.53 | validate_float]
+'reg.pf.Ego.coef.yrs_in_house_cat_gt30' : [-2.92 | validate_float]
+'reg.pf.Ego.intercept' : [88.44 | validate_float]
+
+# The reg.pf.FMV parameters are all related to the self-reported health 
+# autoregressive model run for FMV neighborhoods.
+'reg.pf.FMV.coef.log_veg_fraction' : [1.86 | validate_float]
+'reg.pf.FMV.coef.age' : [.34 | validate_float]
+'reg.pf.FMV.coef.age_squared' : [-.01 | validate_float]
+'reg.pf.FMV.coef.major_ethnic_1' : [0 | validate_float]
+'reg.pf.FMV.coef.major_ethnic_2' : [-1.68 | validate_float]
+'reg.pf.FMV.coef.major_ethnic_3' : [-1.26 | validate_float]
+'reg.pf.FMV.coef.major_ethnic_4' : [-.75 | validate_float]
+'reg.pf.FMV.coef.education_0' : [0 | validate_float]
+'reg.pf.FMV.coef.education_1' : [2.46 | validate_float]
+'reg.pf.FMV.coef.education_2' : [3.45 | validate_float]
+'reg.pf.FMV.coef.education_3' : [4.04 | validate_float]
+'reg.pf.FMV.coef.charcoal' : [.41 | validate_float]
+'reg.pf.FMV.coef.hastoilet' : [-1.63 | validate_float]
+'reg.pf.FMV.coef.yrs_in_house_cat_0' : [0 | validate_float]
+'reg.pf.FMV.coef.yrs_in_house_cat_5' : [.36 | validate_float]
+'reg.pf.FMV.coef.yrs_in_house_cat_15' : [-.64 | validate_float]
+'reg.pf.FMV.coef.yrs_in_house_cat_gt30' : [-3.02 | validate_float]
+'reg.pf.FMV.intercept' : [87.57 | validate_float]
 
 ###############################################################################
 # Neighborhood LULC calculation parameters
 ###############################################################################
 'lulc.use_egocentric' : [True | validate_boolean]
+
 # The buffer is specified as the radius in meters
-'lulc.buffer' : [100 | validate_int]
+'lulc.buffer' : [700 | validate_int]
 'lulc.veg_value' : [2 | validate_int]
 'lulc.NA_value' : [0 | validate_int]
