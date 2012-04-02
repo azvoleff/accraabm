@@ -137,17 +137,39 @@
 'reg.pf.FMV.coef.education_3' : [3.79 | validate_float]
 'reg.pf.FMV.coef.education_4' : [4.04 | validate_float]
 'reg.pf.FMV.coef.charcoal' : [.41 | validate_float]
-'reg.pf.FMV.coef.hastoilet' : [-1.63 | validate_float]
+'reg.pf.FMV.coef.own_toilet' : [-1.63 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_0' : [0 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_5' : [.36 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_15' : [-.64 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_gt30' : [-3.02 | validate_float]
-'reg.pf.FMV.intercept' : [87.57 | validate_float]
+'reg.pf.FMV.coef.intercept' : [87.57 | validate_float]
+
+# The reg.pf.NoVegEffect parameters are all related to the self-reported health 
+# autoregressive model run without any neighborhood effects.
+'reg.pf.NoVegEffect.coef.log_veg_fraction' : [0 | validate_float]
+'reg.pf.NoVegEffect.coef.age' : [.35 | validate_float]
+'reg.pf.NoVegEffect.coef.age_squared' : [-.01 | validate_float]
+'reg.pf.NoVegEffect.coef.major_ethnic_1' : [0 | validate_float]
+'reg.pf.NoVegEffect.coef.major_ethnic_2' : [-1.85 | validate_float]
+'reg.pf.NoVegEffect.coef.major_ethnic_3' : [-1.33 | validate_float]
+'reg.pf.NoVegEffect.coef.major_ethnic_4' : [-.89 | validate_float]
+'reg.pf.NoVegEffect.coef.education_0' : [0 | validate_float]
+'reg.pf.NoVegEffect.coef.education_1' : [2.36 | validate_float]
+'reg.pf.NoVegEffect.coef.education_2' : [3.44 | validate_float]
+'reg.pf.NoVegEffect.coef.education_3' : [3.79 | validate_float]
+'reg.pf.NoVegEffect.coef.education_4' : [4.22 | validate_float]
+'reg.pf.NoVegEffect.coef.charcoal' : [.24 | validate_float]
+'reg.pf.NoVegEffect.coef.own_toilet' : [-1.31 | validate_float]
+'reg.pf.NoVegEffect.coef.yrs_in_house_cat_0' : [0 | validate_float]
+'reg.pf.NoVegEffect.coef.yrs_in_house_cat_5' : [.36 | validate_float]
+'reg.pf.NoVegEffect.coef.yrs_in_house_cat_15' : [-.655| validate_float]
+'reg.pf.NoVegEffect.coef.yrs_in_house_cat_gt30' : [-3.12 | validate_float]
+'reg.pf.NoVegEffect.coef.intercept' : [92.87 | validate_float]
 
 ###############################################################################
 # Neighborhood LULC calculation parameters
 ###############################################################################
-'lulc.use_egocentric' : [True | validate_boolean]
+'NBH_effects_type' : ['egocentric'| validate_string]
 
 # The buffer is specified as the radius in meters
 'lulc.buffer' : [700 | validate_int]

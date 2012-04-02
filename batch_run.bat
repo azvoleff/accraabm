@@ -1,5 +1,5 @@
 @ECHO OFF
-FOR /L %%n IN (1,1,10) DO (
+FOR /L %%n IN (1,1,20) DO (
     ECHO
     ECHO ------------------
     ECHO   Run number: %%n

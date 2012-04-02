@@ -122,17 +122,24 @@ def predict_physical_functioning(person):
     Calculates the physical functioning score of an agent, using the results of 
     a spatial autoregressive lag model.
     """
-    if rcParams['lulc.use_egocentric']:
+    if rcParams['NBH_effects_type'] == "egocentric":
         prefix = 'reg.pf.Ego'
-    else:
+    elif rcParams['NBH_effects_type'] == "vernacular":
         prefix = 'reg.pf.FMV'
+    elif rcParams['NBH_effects_type'] == "none":
+        prefix = 'reg.pf.NoVegEffect'
+    else:
+        raise StatisticsError('No coefficients specified for neighborhoods effects type "%s"'%rcParams['NBH_effects_type'])
 
     ##################################
     # Neighborhood characteristics
     ##################################
     # Note that in the regression model the coefficient for veg fraction is 
     # calculated on the log of the (percentage veg in NBH + 1)
-    xb_sum = rcParams[prefix + '.coef.log_veg_fraction'] * np.log(person._veg_fraction*100 + 1)
+    if rcParams['NBH_effects_type'] in ["egocentric", "vernacular"]:
+        xb_sum = rcParams[prefix + '.coef.log_veg_fraction'] * np.log(person._veg_fraction*100 + 1)
+    else:
+        xb_sum = 0
 
     ##################################
     # Individual-level characteristics

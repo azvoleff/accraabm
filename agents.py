@@ -421,7 +421,7 @@ class World(Agent_set):
         #   2: VEG
         veg_value = rcParams['lulc.veg_value']
         NA_value = rcParams['lulc.NA_value']
-        if rcParams['lulc.use_egocentric']:
+        if rcParams['NBH_effects_type'] == "egocentric":
             buffer = rcParams['lulc.buffer']
             person_IDs, neighborhoods = self.extract_egocentric_neighborhoods(self.get_lulc_data(), buffer)
             veg_fractions_dict = calculate_cover_fraction_NBH(person_IDs, neighborhoods, veg_value, NA_value)
@@ -432,7 +432,7 @@ class World(Agent_set):
             # Return mean veg fraction for use in progress tracking printout 
             # while running the model.
             return veg_fractions / self.num_persons()
-        else:
+        elif rcParams['NBH_effects_type'] == "vernacular":
             # Otherwise use vernacular neighborhood (veg_fraction calculated 
             # over the entire world - this works since currently the model is 
             # only run with a single vernacular neighborhood at a time).
@@ -442,3 +442,7 @@ class World(Agent_set):
             # Return FMV NBH veg fraction for use in progress tracking printout 
             # while running the model.
             return veg_fraction
+        elif rcParams['NBH_effects_type'] == "none":
+            return 0
+        else:
+            raise ValueError('Invalid neighborhoods effects type "%s"'%rcParams['NBH_effects_type'])

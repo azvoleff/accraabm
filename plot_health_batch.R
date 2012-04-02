@@ -33,14 +33,15 @@ theme_update(theme_grey(base_size=12))
 update_geom_defaults("point", aes(size=3))
 update_geom_defaults("line", aes(size=1))
 
-# Give the root of the name without the "_vernacular" or "_egocentric" suffix
 DATA_PATH<- commandArgs(trailingOnly=TRUE)[1]
+# Give the root of the FMV name without the "_vernacular" or "_egocentric" 
+# suffix
 FMV_NAME <- commandArgs(trailingOnly=TRUE)[2]
 
-DATA_PATH <- "M:/Data/Ghana/AccraABM/Runs/"
+#DATA_PATH <- "M:/Data/Ghana/AccraABM/Runs/"
 #FMV_NAME <- "Nima"
 #FMV_NAME <- "DnsmnE"
-FMV_NAME <- "NrthKn"
+#FMV_NAME <- "NrthKn"
 
 calculate_mean_heath <- function(data_path) {
     mean_healths <- c()
@@ -55,7 +56,7 @@ calculate_mean_heath <- function(data_path) {
     return(mean_healths)
 }
 
-scenario_names <- c("_egocentric", "_vernacular")
+scenario_names <- c("_egocentric", "_vernacular", "_novegffect")
 scenario_paths <- paste(DATA_PATH, FMV_NAME, scenario_names, sep="")
 scenario_num <- 1
 for (scenario_path in scenario_paths) {
@@ -81,10 +82,10 @@ for (scenario_path in scenario_paths) {
     }
     mean_healths_cols <- grep('mean_health', names(mean_healths_all_runs))
     mean_healths_stats <- data.frame(time_Robj=mean_healths_all_runs$time_Robj)
-    mean_healths_stats$meansrh_FMV <- apply(mean_healths_all_runs[mean_healths_cols], 1, mean, na.rm=T)
+    mean_healths_stats$meanhealth_FMV <- apply(mean_healths_all_runs[mean_healths_cols], 1, mean, na.rm=T)
     mean_healths_stats$sd_FMV <- apply(mean_healths_all_runs[mean_healths_cols], 1, sd, na.rm=T)
-    mean_healths_stats$conf_lower_FMV <- mean_healths_stats$meansrh - mean_healths_stats$sd
-    mean_healths_stats$conf_upper_FMV <- mean_healths_stats$meansrh + mean_healths_stats$sd
+    mean_healths_stats$conf_lower_FMV <- mean_healths_stats$meanhealth - mean_healths_stats$sd
+    mean_healths_stats$conf_upper_FMV <- mean_healths_stats$meanhealth + mean_healths_stats$sd
     names(mean_healths_stats) <- gsub('FMV', scenario_num, names(mean_healths_stats))
     if (scenario_num==1) {
         scenario_stats <- mean_healths_stats
@@ -98,13 +99,16 @@ for (scenario_path in scenario_paths) {
 #ggsave(filename=paste(DATA_PATH, "/mean_health_plot", ".png", sep=""), width=WIDTH, height=HEIGHT, dpi=DPI)
 
 p <- ggplot()
-p + geom_line(aes(time_Robj, meansrh_1), colour="blue", data=scenario_stats) +
+p + geom_line(aes(time_Robj, meanhealth_1), colour="blue", shape=1, data=scenario_stats) +
     geom_ribbon(aes(x=time_Robj, ymin=conf_lower_1, ymax=conf_upper_1),
         alpha=.2, fill="blue", data=scenario_stats) +
-    geom_line(aes(time_Robj, meansrh_2), colour="red", data=scenario_stats) +
+    geom_line(aes(time_Robj, meanhealth_2), colour="red", shape=2, data=scenario_stats) +
     geom_ribbon(aes(x=time_Robj, ymin=conf_lower_2, ymax=conf_upper_2),
         alpha=.2, fill="red", data=scenario_stats) +
-    scale_fill_discrete(legend=F) +
+    geom_line(aes(time_Robj, meanhealth_3), colour="black", shape=3, data=scenario_stats) +
+    geom_ribbon(aes(x=time_Robj, ymin=conf_lower_2, ymax=conf_upper_2),
+        alpha=.2, fill="red", data=scenario_stats) +
+    scale_fill_discrete(guide="none") +
     labs(x="Time", y="Self-reported Health")
-ggsave(paste(DATA_PATH, "/", FMV_NAME, "_mean_srh.png", sep=""), width=WIDTH,
+ggsave(paste(DATA_PATH, "/", FMV_NAME, "_mean_health.png", sep=""), width=WIDTH,
         height=HEIGHT, dpi=DPI)
