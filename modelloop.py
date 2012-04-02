@@ -63,7 +63,7 @@ def main_loop(world, results_path):
     # it runs.
     modelrun_starttime = time.time()
 
-    def write_results_CSV(world, results_path, timestep):
+    def write_results(world, results_path, timestep):
         """
         Function to periodically save model results to CSV (if this option is 
         selected in the rc file).
@@ -77,7 +77,7 @@ def main_loop(world, results_path):
          
     # Write the results for timestep 0
     world.calculate_veg_fractions()
-    write_results_CSV(world, results_path, 0)
+    write_results(world, results_path, 0)
 
     while model_time.in_bounds():
         world.lulc_markov_transition()
@@ -109,7 +109,7 @@ def main_loop(world, results_path):
             print "End of model run: population is zero."
             break
 
-        write_results_CSV(world, results_path, model_time.get_cur_int_timestep())
+        write_results(world, results_path, model_time.get_cur_int_timestep())
 
         model_time.increment()
 
