@@ -103,6 +103,7 @@ whsa$major_ethnic <- replace_nas(whsa$major_ethnic)
 whsa$OwnToilet <- replace_nas(whsa$OwnToilet)
 whsa$Charcoal <- replace_nas(whsa$Charcoal)
 whsa$YrsInHouse_Cat <- replace_nas(whsa$YrsInHouse_Cat)
+whsa$rand_sf36_pf <- replace_nas(whsa$rand_sf36_pf)
 
 ###############################################################################
 # Now output the clusters

@@ -25,23 +25,24 @@
 ###############################################################################
 
 require(ggplot2)
+require(reshape) # For 'melt' command
 
 DPI <- 300
 WIDTH <- 9
 HEIGHT <- 5.67
-theme_update(theme_grey(base_size=12))
-update_geom_defaults("point", aes(size=3))
-update_geom_defaults("line", aes(size=1))
+theme_update(theme_bw(base_size=18))
+update_geom_defaults("point", aes(size=2))
+update_geom_defaults("line", aes(size=.75))
 
 DATA_PATH<- commandArgs(trailingOnly=TRUE)[1]
 # Give the root of the FMV name without the "_vernacular" or "_egocentric" 
 # suffix
 FMV_NAME <- commandArgs(trailingOnly=TRUE)[2]
 
-#DATA_PATH <- "M:/Data/Ghana/AccraABM/Runs/"
+DATA_PATH <- "R:/Data/Ghana/AccraABM/Runs/"
 #FMV_NAME <- "Nima"
 #FMV_NAME <- "DnsmnE"
-#FMV_NAME <- "NrthKn"
+FMV_NAME <- "NrthKn"
 
 calculate_mean_heath <- function(data_path) {
     mean_healths <- c()
@@ -56,7 +57,7 @@ calculate_mean_heath <- function(data_path) {
     return(mean_healths)
 }
 
-scenario_names <- c("_egocentric", "_vernacular", "_novegffect")
+scenario_names <- c("_none", "_egocentric", "_vernacular")
 scenario_paths <- paste(DATA_PATH, FMV_NAME, scenario_names, sep="")
 scenario_num <- 1
 for (scenario_path in scenario_paths) {
@@ -98,17 +99,18 @@ for (scenario_path in scenario_paths) {
 #qplot(time_Robj, health, data=mean_healths, xlab="Time", ylab="Mean Self-reported Health")
 #ggsave(filename=paste(DATA_PATH, "/mean_health_plot", ".png", sep=""), width=WIDTH, height=HEIGHT, dpi=DPI)
 
-p <- ggplot()
-p + geom_line(aes(time_Robj, meanhealth_1), colour="blue", shape=1, data=scenario_stats) +
-    geom_ribbon(aes(x=time_Robj, ymin=conf_lower_1, ymax=conf_upper_1),
-        alpha=.2, fill="blue", data=scenario_stats) +
-    geom_line(aes(time_Robj, meanhealth_2), colour="red", shape=2, data=scenario_stats) +
-    geom_ribbon(aes(x=time_Robj, ymin=conf_lower_2, ymax=conf_upper_2),
-        alpha=.2, fill="red", data=scenario_stats) +
-    geom_line(aes(time_Robj, meanhealth_3), colour="black", shape=3, data=scenario_stats) +
-    geom_ribbon(aes(x=time_Robj, ymin=conf_lower_2, ymax=conf_upper_2),
-        alpha=.2, fill="red", data=scenario_stats) +
-    scale_fill_discrete(guide="none") +
-    labs(x="Time", y="Self-reported Health")
-ggsave(paste(DATA_PATH, "/", FMV_NAME, "_mean_health.png", sep=""), width=WIDTH,
+mean_cols <- grep('^(time_Robj|meanhealth)', names(scenario_stats))
+meanhealth <- scenario_stats[mean_cols]
+meanhealth <- meanhealth[-1,]
+meanhealth <- melt(meanhealth, id='time_Robj')
+
+p <- qplot(time_Robj, value, geom="line", linetype=variable, data=meanhealth)
+p + labs(x="Time", y="Physical Functioning Score") +
+    scale_linetype_discrete(name="Model Type",
+                            breaks=c("meanhealth_1", "meanhealth_2", "meanhealth_3"), 
+                            labels=c("No NBH Effects", "Egocentric NBHs", "Vernacular NBHs")) +
+    opts(legend.position=c(.85, .85)) +
+    geom_vline(xintercept=as.numeric(meanhealth$time_Robj[6]), linetype=4)
+ggsave(paste(DATA_PATH, "/", FMV_NAME, "_mean_health.png", sep=""), 
+       width=WIDTH,
         height=HEIGHT, dpi=DPI)
