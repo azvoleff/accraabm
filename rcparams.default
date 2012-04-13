@@ -121,6 +121,7 @@
 'reg.pf.Ego.coef.yrs_in_house_cat_15' : [-.53 | validate_float]
 'reg.pf.Ego.coef.yrs_in_house_cat_gt30' : [-2.92 | validate_float]
 'reg.pf.Ego.coef.intercept' : [88.44 | validate_float]
+'reg.pf.Ego.residvariance' : [0 | validate_float]
 
 # The reg.pf.FMV parameters are all related to the self-reported health 
 # autoregressive model run for FMV neighborhoods.
@@ -143,6 +144,7 @@
 'reg.pf.FMV.coef.yrs_in_house_cat_15' : [-.64 | validate_float]
 'reg.pf.FMV.coef.yrs_in_house_cat_gt30' : [-3.02 | validate_float]
 'reg.pf.FMV.coef.intercept' : [87.57 | validate_float]
+'reg.pf.FMV.residvariance' : [0 | validate_float]
 
 # The reg.pf.NoVegEffect parameters are all related to the self-reported health 
 # autoregressive model run without any neighborhood effects.
@@ -165,6 +167,7 @@
 'reg.pf.NoVegEffect.coef.yrs_in_house_cat_15' : [-.655| validate_float]
 'reg.pf.NoVegEffect.coef.yrs_in_house_cat_gt30' : [-3.12 | validate_float]
 'reg.pf.NoVegEffect.coef.intercept' : [92.87 | validate_float]
+'reg.pf.NoVegEffect.residvariance' : [0 | validate_float]
 
 ###############################################################################
 # Neighborhood LULC calculation parameters

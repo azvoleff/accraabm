@@ -190,4 +190,6 @@ def predict_physical_functioning(person):
     # Intercept
     xb_sum += rcParams[prefix + '.coef.intercept']
 
+    xb_sum += np.random.randn()*rcParams[prefix + '.residvariance']
+
     return xb_sum
