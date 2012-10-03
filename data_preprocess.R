@@ -25,12 +25,12 @@
 # used in initialize.py.
 ###############################################################################
 
-require(rgdal)
-require(rgeos) # needed for gBuffer function
-require(raster)
-require(ggplot2)
-require(expm)
-require(sp)
+library(rgdal)
+library(rgeos) # needed for gBuffer function
+library(raster)
+library(ggplot2)
+library(expm)
+library(sp)
 
 DATA_PATH <- commandArgs(trailingOnly=TRUE)[1]
 IMAGERY_PATH <- commandArgs(trailingOnly=TRUE)[2]
